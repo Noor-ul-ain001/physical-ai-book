@@ -10,7 +10,12 @@
       "Bash(python:*)",
       "Bash(taskkill:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh repo create:*)",
+      "Bash(curl:*)",
+      "Bash(gh --version:*)",
+      "Bash(git remote:*)",
+      "Bash(git remote add:*)"
     ]
   }
 }
