@@ -1,0 +1,15 @@
+torch>=2.0.0
+gymnasium==0.27.0
+numpy>=1.21.0
+matplotlib>=3.5.0
+omegaconf>=2.3.0
+pybullet>=3.2.5
+open3d>=0.17.0
+google-generativeai>=0.1.0
+qdrant-client>=1.6.0
+transformers>=4.20.0
+accelerate>=0.13.0
+datasets>=2.4.0
+evaluate>=0.4.0
+deepspeed>=0.7.0
+tensorboard>=2.9.0

@@ -1,0 +1,1418 @@
+---
+sidebar_position: 4
+---
+
+# Unity Visualization: Connecting Gazebo to Unity for Enhanced Humanoid Simulation
+
+## Introduction to Unity for Robotics Visualization
+
+Unity has emerged as a powerful platform for robotics visualization and simulation, offering high-quality rendering capabilities, physics simulation, and real-time interaction. For humanoid robotics, Unity provides an excellent complement to Gazebo, offering photorealistic rendering and intuitive user interfaces that can enhance the development and testing process.
+
+### Why Unity for Robotics Visualization?
+
+1. **Photorealistic Rendering**: High-quality graphics for realistic environments
+2. **User Interaction**: Intuitive interfaces for human-in-the-loop testing
+3. **Real-time Performance**: Fast visualization with detailed graphics
+4. **Cross-Platform Support**: Runs on multiple platforms and devices
+5. **Asset Ecosystem**: Rich library of models, environments, and tools
+6. **VR/AR Integration**: Support for immersive interfaces
+
+## Setting Up Unity for Robotics
+
+### Unity Robotics Setup
+
+To use Unity for robotics visualization, you need to install the Unity Robotics packages:
+
+1. **Unity Robot Framework (URF)**: Core framework for robotics in Unity
+2. **ROS TCP Connector**: For communication with ROS2
+3. **URDF Importer**: To import robot models from URDF
+4. **Oculus XR Plugin** (optional): For VR integration
+
+### Installation Prerequisites
+
+```bash
+# Install ROS2 packages needed for Unity integration
+sudo apt install ros-humble-rosbridge-suite
+sudo apt install ros-humble-tf2-web-republisher
+```
+
+### Unity Project Setup
+
+Create a new Unity project with the following steps:
+
+1. Create a new 3D project in Unity Hub
+2. Install the ROS TCP Connector package from the Package Manager
+3. Import the URDF Importer package
+4. Set up the ROS Communication Manager
+
+```csharp
+// Example: ROS Communication Manager setup
+using Unity.Robotics.ROSTCPConnector;
+
+public class HSRosConnector : MonoBehaviour
+{
+    [SerializeField]
+    private string rosIPAddress = "127.0.0.1";
+    [SerializeField]
+    private int rosPort = 10000;
+
+    private RosConnection rosConnection;
+
+    void Start()
+    {
+        rosConnection = RosConnection.GetOrCreateInstance();
+        rosConnection.ConnectToRos(rosIPAddress, rosPort);
+    }
+}
+```
+
+## URDF Import and Robot Setup
+
+### Importing Robots from URDF
+
+Unity's URDF Importer allows you to import your robot model directly from URDF files:
+
+```csharp
+// Example: URDF Importer script
+using UnityEngine;
+using Unity.Robotics.URDFImporter;
+
+public class HSRobotImporter : MonoBehaviour
+{
+    [SerializeField] private string urdfPath = "URDF/humanoid.urdf";
+    
+    void Start()
+    {
+        // Load the URDF file and create the robot
+        var robot = URDFLoader.LoadUrdf(urdfPath, this.transform);
+        
+        // Configure physics properties
+        ConfigureRobotPhysics(robot);
+        
+        // Set up joint controllers
+        SetupJointControllers(robot);
+    }
+
+    private void ConfigureRobotPhysics(GameObject robot)
+    {
+        // Set appropriate physics properties for the humanoid
+        var links = robot.GetComponentsInChildren<LinkConfigAsset>();
+        foreach (var link in links)
+        {
+            if (link.jointName.Contains("torso"))
+            {
+                link.mass = 5.0f;
+                link.useGravity = true;
+            }
+            else if (link.jointName.Contains("foot"))
+            {
+                // Higher friction for feet to prevent sliding
+                link.materialName = "HighFrictionMaterial";
+            }
+        }
+    }
+
+    private void SetupJointControllers(GameObject robot)
+    {
+        // Set up joint controllers for each actuated joint
+        var joints = robot.GetComponentsInChildren<JointConfigAsset>();
+        foreach (var joint in joints)
+        {
+            if (joint.jointName.Contains("hip") || joint.jointName.Contains("knee"))
+            {
+                // Configure humanoid leg joints
+                joint.axis = new Vector3(1, 0, 0); // X-axis rotation for hip/knee
+                joint.limits = new JointLimits { min = -1.57f, max = 1.57f };
+            }
+        }
+    }
+}
+```
+
+### Humanoid-Specific Configuration
+
+For humanoid robots, special attention is needed for:
+
+1. **Balance and Stability**: Configure appropriate mass distributions
+2. **Joint Limits**: Match simulation to real-world constraints
+3. **Collision Detection**: Set up proper collision layers
+
+```csharp
+// Example: Humanoid-specific setup
+using UnityEngine;
+
+public class HumanoidSetup : MonoBehaviour
+{
+    [Header("Balance Configuration")]
+    public float centerOfMassHeight = 0.8f;
+    public float baseStabilityRadius = 0.1f;
+
+    [Header("Joint Configuration")]
+    public float hipMaxTorque = 50f;
+    public float kneeMaxTorque = 40f;
+
+    void Start()
+    {
+        SetupHumanoidCharacter();
+        ConfigureBalanceSystem();
+    }
+
+    private void SetupHumanoidCharacter()
+    {
+        // Set up the center of mass for the humanoid
+        var humanoidRoot = this.transform.Find("torso");
+        if (humanoidRoot != null)
+        {
+            var rb = humanoidRoot.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.centerOfMass = new Vector3(0, centerOfMassHeight, 0);
+                rb.mass = 15.0f; // Total humanoid mass
+            }
+        }
+
+        // Configure joint torques for realistic movement
+        ConfigureJointTorques();
+    }
+
+    private void ConfigureJointTorques()
+    {
+        var joints = GetComponentsInChildren<ArticulationBody>();
+        foreach (var joint in joints)
+        {
+            if (joint.name.Contains("hip"))
+            {
+                joint.linearLockX = ArticulationDofLock.Locked;
+                joint.linearLockY = ArticulationDofLock.Locked;
+                joint.linearLockZ = ArticulationDofLock.Locked;
+                joint.maxForce = hipMaxTorque;
+            }
+            else if (joint.name.Contains("knee"))
+            {
+                joint.linearLockX = ArticulationDofLock.Locked;
+                joint.linearLockY = ArticulationDofLock.Locked;
+                joint.linearLockZ = ArticulationDofLock.Locked;
+                joint.maxForce = kneeMaxTorque;
+            }
+        }
+    }
+
+    private void ConfigureBalanceSystem()
+    {
+        // Placeholder for balance control system
+        // This would typically connect to a ROS2 node implementing balance control
+    }
+}
+```
+
+## ROS2 Communication in Unity
+
+### Setting up ROS2 Communication
+
+The Unity ROS TCP Connector enables communication between Unity and ROS2:
+
+```csharp
+// Example: ROS2 communication script
+using UnityEngine;
+using Unity.Robotics.ROSTCPConnector;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using RosMessageTypes.Sensor;
+using RosMessageTypes.Std;
+
+public class HSRosCommunication : MonoBehaviour
+{
+    private RosConnection ros;
+    private string robotNamespace = "/humanoid";
+
+    void Start()
+    {
+        ros = RosConnection.GetOrCreateInstance();
+        ros.RegisteredGazeboConnection.AddListener(OnGazeboConnected);
+        
+        // Subscribe to joint states
+        ros.Subscribe<sensor_msgs.JointStateMsg>(
+            robotNamespace + "/joint_states", 
+            OnJointStateReceived
+        );
+        
+        // Subscribe to IMU data
+        ros.Subscribe<sensor_msgs.ImuMsg>(
+            robotNamespace + "/imu/data", 
+            OnImuDataReceived
+        );
+        
+        // Subscribe to camera data (simplified)
+        ros.Subscribe<sensor_msgs.ImageMsg>(
+            robotNamespace + "/camera/image_raw", 
+            OnCameraDataReceived
+        );
+    }
+
+    void OnGazeboConnected()
+    {
+        Debug.Log("Connected to Gazebo/ROS2");
+    }
+
+    void OnJointStateReceived(sensor_msgs.JointStateMsg jointState)
+    {
+        // Update the Unity robot model based on ROS2 joint states
+        UpdateRobotModel(jointState);
+    }
+
+    void OnImuDataReceived(sensor_msgs.ImuMsg imuMsg)
+    {
+        // Process IMU data for Unity visualization
+        ProcessImuData(imuMsg);
+    }
+
+    void OnCameraDataReceived(sensor_msgs.ImageMsg imageMsg)
+    {
+        // Process camera data for Unity visualization
+        ProcessCameraData(imageMsg);
+    }
+
+    private void UpdateRobotModel(sensor_msgs.JointStateMsg jointState)
+    {
+        // Find the robot in the Unity scene
+        GameObject robot = GameObject.Find("HumanoidRobot");
+        if (robot == null) return;
+
+        // Update each joint based on ROS2 data
+        for (int i = 0; i < jointState.name.Count; i++)
+        {
+            string jointName = jointState.name[i];
+            float jointPosition = jointState.position[i];
+
+            Transform jointTransform = robot.transform.Find(jointName);
+            if (jointTransform != null)
+            {
+                // Update the joint's rotation based on ROS2 data
+                if (jointName.Contains("hip"))
+                {
+                    jointTransform.localRotation = Quaternion.Euler(jointPosition * Mathf.Rad2Deg, 0, 0);
+                }
+                else if (jointName.Contains("knee"))
+                {
+                    jointTransform.localRotation = Quaternion.Euler(jointPosition * Mathf.Rad2Deg, 0, 0);
+                }
+                // Add more joint types as needed
+            }
+        }
+    }
+
+    private void ProcessImuData(sensor_msgs.ImuMsg imuMsg)
+    {
+        // Convert IMU data to Unity coordinate system
+        Vector3 orientation = new Vector3(
+            (float)imuMsg.orientation.x,
+            (float)imuMsg.orientation.y,
+            (float)imuMsg.orientation.z,
+            (float)imuMsg.orientation.w
+        );
+
+        // Apply orientation to the robot or use for visualization
+        GameObject torso = GameObject.Find("torso");
+        if (torso != null)
+        {
+            torso.transform.rotation = new Quaternion(
+                orientation.x, orientation.y, orientation.z, orientation.w
+            );
+        }
+    }
+
+    private void ProcessCameraData(sensor_msgs.ImageMsg imageMsg)
+    {
+        // Process camera data for Unity texture display
+        // This is a simplified example - real implementation would 
+        // convert ROS image format to Unity texture format
+    }
+
+    void OnDestroy()
+    {
+        if (ros != null)
+        {
+            ros.UnregisterAll();
+        }
+    }
+}
+```
+
+## Unity Visualization Components
+
+### Creating Visualization Assets
+
+For humanoid robots, you'll typically create the following visualization components:
+
+```csharp
+// Example: Visualization manager for humanoid robot
+using UnityEngine;
+using System.Collections.Generic;
+
+public class HumanoidVisualizationManager : MonoBehaviour
+{
+    [Header("Visualization Elements")]
+    public GameObject robotModel;
+    public Material[] robotMaterials;
+    public LineRenderer pathRenderer;  // For showing planned paths
+    public GameObject[] sensorVisualizers;  // Visualize sensor ranges
+    
+    [Header("UI Elements")]
+    public UnityEngine.UI.Text statusText;
+    public UnityEngine.UI.Slider speedSlider;
+    
+    private Dictionary<string, GameObject> robotParts;
+    private bool showSensors = true;
+
+    void Start()
+    {
+        InitializeRobotParts();
+        SetupVisualizationUI();
+    }
+
+    private void InitializeRobotParts()
+    {
+        robotParts = new Dictionary<string, GameObject>();
+        
+        // Add all robot parts to the dictionary
+        var allChildren = robotModel.GetComponentsInChildren<Transform>();
+        foreach (var child in allChildren)
+        {
+            if (child != robotModel.transform) // Skip the root
+            {
+                robotParts[child.name] = child.gameObject;
+            }
+        }
+        
+        // Apply special materials to critical parts
+        if (robotParts.ContainsKey("left_foot"))
+        {
+            var leftFootRenderer = robotParts["left_foot"].GetComponent<Renderer>();
+            if (leftFootRenderer != null)
+            {
+                leftFootRenderer.material = robotMaterials[0]; // Special material for feet
+            }
+        }
+    }
+
+    private void SetupVisualizationUI()
+    {
+        // Set up UI callbacks
+        if (speedSlider != null)
+        {
+            speedSlider.onValueChanged.AddListener(OnSpeedChanged);
+        }
+    }
+
+    private void OnSpeedChanged(float value)
+    {
+        // Adjust visualization speed based on slider value
+        Time.timeScale = value;
+    }
+
+    public void ShowPath(List<Vector3> path)
+    {
+        if (pathRenderer == null || path.Count < 2) return;
+
+        pathRenderer.positionCount = path.Count;
+        for (int i = 0; i < path.Count; i++)
+        {
+            pathRenderer.SetPosition(i, path[i]);
+        }
+    }
+
+    public void UpdateRobotStatus(string status)
+    {
+        if (statusText != null)
+        {
+            statusText.text = "Status: " + status;
+        }
+    }
+
+    public void ToggleSensorVisualization(bool show)
+    {
+        showSensors = show;
+        foreach (var sensorVis in sensorVisualizers)
+        {
+            sensorVis.SetActive(show);
+        }
+    }
+
+    public void HighlightJoint(string jointName, Color color)
+    {
+        if (robotParts.ContainsKey(jointName))
+        {
+            var renderer = robotParts[jointName].GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                var originalMaterial = renderer.material;
+                var highlightedMaterial = new Material(originalMaterial);
+                highlightedMaterial.color = color;
+                renderer.material = highlightedMaterial;
+                
+                // Reset after delay
+                StartCoroutine(ResetMaterial(renderer, originalMaterial, 0.5f));
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator ResetMaterial(Renderer renderer, Material original, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        renderer.material = original;
+    }
+}
+```
+
+### Sensor Visualization
+
+Creating visualizations for different sensor types:
+
+```csharp
+// Example: Sensor visualization manager
+using UnityEngine;
+using System.Collections.Generic;
+
+public class SensorVisualization : MonoBehaviour
+{
+    [Header("Sensor Visualization")]
+    public GameObject rangeFinderPrefab;
+    public GameObject cameraFOVPrefab;
+    public GameObject lidarPointPrefab;
+    
+    private Dictionary<string, List<GameObject>> sensorVisuals = new Dictionary<string, List<GameObject>>();
+
+    public void ShowLidarData(string sensorName, float[] ranges, float angleMin, float angleIncrement)
+    {
+        // Clear previous visualization if exists
+        ClearSensorVisualization(sensorName);
+        
+        // Create new visualization
+        List<GameObject> points = new List<GameObject>();
+        
+        for (int i = 0; i < ranges.Length; i++)
+        {
+            if (ranges[i] > 0.1f && ranges[i] < 10.0f) // Valid range
+            {
+                Vector3 position = GetLidarPointPosition(
+                    ranges[i], 
+                    angleMin + i * angleIncrement
+                );
+                
+                GameObject point = Instantiate(lidarPointPrefab, position, Quaternion.identity);
+                point.transform.SetParent(this.transform);
+                points.Add(point);
+            }
+        }
+        
+        sensorVisuals[sensorName] = points;
+    }
+
+    private Vector3 GetLidarPointPosition(float range, float angle)
+    {
+        // Calculate position based on sensor position and orientation
+        Vector3 sensorPos = this.transform.position;
+        Quaternion sensorRot = this.transform.rotation;
+        
+        Vector3 direction = sensorRot * new Vector3(
+            Mathf.Cos(angle) * range,
+            0,
+            Mathf.Sin(angle) * range
+        );
+        
+        return sensorPos + direction;
+    }
+
+    public void ShowCameraFOV(string sensorName, float horizontalFOV, float range)
+    {
+        // Clear previous visualization
+        ClearSensorVisualization(sensorName);
+        
+        GameObject fovObject = Instantiate(cameraFOVPrefab, this.transform);
+        // Configure the FOV visualization based on parameters
+    }
+
+    public void ShowRangeFinder(string sensorName, float range)
+    {
+        // Clear previous visualization
+        ClearSensorVisualization(sensorName);
+        
+        GameObject rangeObject = Instantiate(rangeFinderPrefab, this.transform);
+        // Configure based on range value
+    }
+
+    private void ClearSensorVisualization(string sensorName)
+    {
+        if (sensorVisuals.ContainsKey(sensorName))
+        {
+            foreach (var obj in sensorVisuals[sensorName])
+            {
+                if (obj != null) Destroy(obj);
+            }
+            sensorVisuals.Remove(sensorName);
+        }
+    }
+}
+```
+
+## Humanoid-Specific Visualization Features
+
+### Animation and Motion
+
+For humanoid robots, visualization can include motion and animation:
+
+```csharp
+// Example: Humanoid animation controller
+using UnityEngine;
+using UnityEngine.Animations;
+
+public class HumanoidAnimationController : MonoBehaviour
+{
+    [Header("Walking Animation")]
+    public AnimationCurve stepHeightCurve;
+    public float walkCycleSpeed = 1.0f;
+    
+    [Header("Balance Animation")]
+    public float balanceThreshold = 0.1f;
+    public AnimationCurve balanceRecoveryCurve;
+
+    private Animator animator;
+    private float walkCycle = 0.0f;
+    private bool isWalking = false;
+
+    void Start()
+    {
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            // Create a simple animator controller if none exists
+            CreateSimpleAnimator();
+        }
+    }
+
+    void Update()
+    {
+        UpdateWalkingAnimation();
+        HandleBalanceVisualFeedback();
+    }
+
+    private void UpdateWalkingAnimation()
+    {
+        // Update the walking cycle based on input
+        if (isWalking)
+        {
+            walkCycle += walkCycleSpeed * Time.deltaTime;
+            if (walkCycle > 1.0f) walkCycle = 0.0f;
+        }
+
+        // Apply walking animation parameters
+        if (animator != null)
+        {
+            animator.SetFloat("WalkCycle", walkCycle);
+            animator.SetBool("IsWalking", isWalking);
+        }
+
+        // Apply step height animation
+        ApplyStepHeightAnimation();
+    }
+
+    private void ApplyStepHeightAnimation()
+    {
+        // Animate foot positions for walking
+        var leftFoot = transform.Find("left_foot");
+        var rightFoot = transform.Find("right_foot");
+        
+        if (leftFoot != null && rightFoot != null)
+        {
+            // Apply walking gait pattern
+            float leftFootHeight = 0f;
+            float rightFootHeight = 0f;
+            
+            if (isWalking)
+            {
+                // Calculate foot height based on walk cycle
+                float leftCycle = (walkCycle + 0.5f) % 1.0f; // Offset for left foot
+                float rightCycle = walkCycle;
+                
+                leftFootHeight = stepHeightCurve.Evaluate(leftCycle) * 0.05f; // Scale factor
+                rightFootHeight = stepHeightCurve.Evaluate(rightCycle) * 0.05f;
+            }
+            
+            // Apply the calculated heights
+            leftFoot.localPosition = new Vector3(
+                leftFoot.localPosition.x,
+                leftFootHeight,
+                leftFoot.localPosition.z
+            );
+            
+            rightFoot.localPosition = new Vector3(
+                rightFoot.localPosition.x,
+                rightFootHeight,
+                rightFoot.localPosition.z
+            );
+        }
+    }
+
+    private void HandleBalanceVisualFeedback()
+    {
+        // Get the robot's current orientation
+        Vector3 upVector = transform.up;
+        float tiltAngle = Vector3.Angle(upVector, Vector3.up);
+        
+        // Visual feedback when robot is tilting beyond threshold
+        if (tiltAngle > balanceThreshold * Mathf.Rad2Deg)
+        {
+            // Apply corrective animation or visual effect
+            StartCoroutine(ShowBalanceWarning());
+        }
+    }
+
+    private System.Collections.IEnumerator ShowBalanceWarning()
+    {
+        // Change material color to indicate balance issues
+        var renderer = GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            var originalColor = renderer.material.color;
+            renderer.material.color = Color.yellow;
+            
+            yield return new WaitForSeconds(0.1f);
+            
+            renderer.material.color = originalColor;
+        }
+    }
+
+    private void CreateSimpleAnimator()
+    {
+        // Create a simple animator controller with basic humanoid parameters
+        RuntimeAnimatorController controller = new AnimatorController();
+        animator = gameObject.AddComponent<Animator>();
+        animator.runtimeAnimatorController = controller;
+        
+        // Add basic parameters
+        var parameters = new AnimatorControllerParameter[]
+        {
+            new AnimatorControllerParameter { name = "WalkCycle", type = AnimatorControllerParameterType.Float },
+            new AnimatorControllerParameter { name = "IsWalking", type = AnimatorControllerParameterType.Bool }
+        };
+        
+        (controller as AnimatorController).parameters = parameters;
+    }
+
+    public void SetWalkingState(bool walking)
+    {
+        isWalking = walking;
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", walking);
+        }
+    }
+}
+```
+
+### Human-Robot Interaction Visualization
+
+Creating interfaces for human-robot interaction:
+
+```csharp
+// Example: Human-robot interaction interface
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
+public class HumanRobotInterface : MonoBehaviour, IPointerClickHandler
+{
+    [Header("Interaction Elements")]
+    public GameObject interactionPanel;
+    public Button[] controlButtons;
+    public Slider speedSlider;
+    public Text statusText;
+    
+    [Header("Robot Commands")]
+    public string[] availableCommands = { "walk_forward", "turn_left", "turn_right", "stop" };
+
+    private bool interactionActive = false;
+    private string currentStatus = "Ready";
+
+    void Start()
+    {
+        SetupInteractionPanel();
+        UpdateStatus();
+    }
+
+    private void SetupInteractionPanel()
+    {
+        if (interactionPanel != null)
+        {
+            interactionPanel.SetActive(false);
+        }
+        
+        if (controlButtons != null)
+        {
+            for (int i = 0; i < controlButtons.Length && i < availableCommands.Length; i++)
+            {
+                int buttonIndex = i; // For closure
+                controlButtons[i].onClick.AddListener(() => SendCommand(availableCommands[buttonIndex]));
+            }
+        }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        // Toggle interaction panel on click
+        if (interactionPanel != null)
+        {
+            interactionActive = !interactionActive;
+            interactionPanel.SetActive(interactionActive);
+            
+            if (interactionActive)
+            {
+                SetStatus("Interaction Panel Opened");
+            }
+            else
+            {
+                SetStatus("Ready");
+            }
+        }
+    }
+
+    public void SendCommand(string command)
+    {
+        // This would typically send the command to ROS
+        Debug.Log($"Sending command: {command}");
+        
+        // Update UI to reflect command sent
+        SetStatus($"Executing: {command}");
+        
+        // Add command-specific behavior
+        switch (command)
+        {
+            case "walk_forward":
+                // Visual feedback for walking
+                StartCoroutine(ShowWalkingEffect());
+                break;
+            case "turn_left":
+                // Visual feedback for turning left
+                StartCoroutine(ShowTurningEffect(-1));
+                break;
+            case "turn_right":
+                // Visual feedback for turning right
+                StartCoroutine(ShowTurningEffect(1));
+                break;
+            case "stop":
+                // Visual feedback for stopping
+                StartCoroutine(ShowStoppingEffect());
+                break;
+        }
+    }
+
+    private System.Collections.IEnumerator ShowWalkingEffect()
+    {
+        // Visual effect for walking command
+        var robotColor = GetComponent<Renderer>().material.color;
+        var originalColor = robotColor;
+        
+        for (int i = 0; i < 10; i++)
+        {
+            GetComponent<Renderer>().material.color = Color.blue;
+            yield return new WaitForSeconds(0.1f);
+            GetComponent<Renderer>().material.color = originalColor;
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private System.Collections.IEnumerator ShowTurningEffect(int direction)
+    {
+        // Visual effect for turning
+        Transform robotTransform = this.transform;
+        Vector3 originalRotation = robotTransform.eulerAngles;
+        
+        for (int i = 0; i < 20; i++)
+        {
+            robotTransform.Rotate(0, direction * 2.0f, 0);
+            yield return new WaitForSeconds(0.05f);
+        }
+        
+        // Return to original rotation
+        robotTransform.eulerAngles = originalRotation;
+    }
+
+    private System.Collections.IEnumerator ShowStoppingEffect()
+    {
+        // Visual effect for stopping
+        var robotRenderer = GetComponent<Renderer>();
+        var originalColor = robotRenderer.material.color;
+        
+        for (int i = 0; i < 5; i++)
+        {
+            robotRenderer.material.color = Color.red;
+            yield return new WaitForSeconds(0.1f);
+            robotRenderer.material.color = originalColor;
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    public void SetStatus(string status)
+    {
+        currentStatus = status;
+        UpdateStatus();
+    }
+
+    private void UpdateStatus()
+    {
+        if (statusText != null)
+        {
+            statusText.text = $"Status: {currentStatus}";
+        }
+    }
+
+    void Update()
+    {
+        // Update any dynamic UI elements
+        if (speedSlider != null)
+        {
+            // Get speed from ROS or animation system
+            // float currentSpeed = GetCurrentRobotSpeed();
+            // speedSlider.value = currentSpeed;
+        }
+    }
+}
+```
+
+## Integration with Gazebo Simulation
+
+### Synchronization with Physics Simulation
+
+To ensure Unity visualization matches the Gazebo simulation:
+
+```csharp
+// Example: Synchronization manager
+using UnityEngine;
+using Unity.Robotics.ROSTCPConnector;
+using RosMessageTypes.Nav;
+using RosMessageTypes.Geometry;
+
+public class SimulationSyncManager : MonoBehaviour
+{
+    [Header("Synchronization Settings")]
+    public float syncRate = 60.0f; // Hz
+    public bool syncPosition = true;
+    public bool syncRotation = true;
+    public bool syncJoints = true;
+
+    private float lastSyncTime = 0.0f;
+    private RosConnection ros;
+    private string robotNamespace = "/humanoid";
+
+    void Start()
+    {
+        ros = RosConnection.GetOrCreateInstance();
+        
+        // Subscribe to ground truth topics if available
+        ros.Subscribe<nav_msgs.OdometryMsg>(
+            robotNamespace + "/ground_truth/odometry", 
+            OnGroundTruthReceived
+        );
+    }
+
+    void Update()
+    {
+        // Control update rate to avoid overloading ROS
+        if (Time.time - lastSyncTime > 1.0f / syncRate)
+        {
+            SyncWithSimulation();
+            lastSyncTime = Time.time;
+        }
+    }
+
+    private void SyncWithSimulation()
+    {
+        // Send current Unity pose back to ROS for visualization
+        SendPoseToROS();
+    }
+
+    private void OnGroundTruthReceived(nav_msgs.OdometryMsg groundTruth)
+    {
+        // Update Unity robot position based on ground truth from simulation
+        if (syncPosition)
+        {
+            Vector3 newPosition = new Vector3(
+                (float)groundTruth.pose.pose.position.x,
+                (float)groundTruth.pose.pose.position.z,  // Map Z to Unity Y for up-axis
+                (float)groundTruth.pose.pose.position.y   // Map Y to Unity Z
+            );
+            
+            this.transform.position = newPosition;
+        }
+
+        if (syncRotation)
+        {
+            Quaternion newRotation = new Quaternion(
+                (float)groundTruth.pose.pose.orientation.x,
+                (float)groundTruth.pose.pose.orientation.z,
+                (float)groundTruth.pose.pose.orientation.y,
+                (float)groundTruth.pose.pose.orientation.w
+            );
+            
+            this.transform.rotation = newRotation;
+        }
+
+        // Process twist (velocity) data
+        Vector3 linearVelocity = new Vector3(
+            (float)groundTruth.twist.twist.linear.x,
+            (float)groundTruth.twist.twist.linear.z,
+            (float)groundTruth.twist.twist.linear.y
+        );
+        
+        // Could be used for visualization effects like trails or motion blur
+        ApplyMotionEffects(linearVelocity);
+    }
+
+    private void SendPoseToROS()
+    {
+        // Send current Unity pose to ROS for visualization
+        var poseMsg = new geometry_msgs.PoseStampedMsg();
+        poseMsg.header.frame_id = "unity_world";
+        poseMsg.header.stamp = new builtin_interfaces.TimeMsg();
+        
+        poseMsg.pose.position = new geometry_msgs.PointMsg
+        {
+            x = this.transform.position.x,
+            y = this.transform.position.z,  // Unity Z -> ROS Y
+            z = this.transform.position.y   // Unity Y -> ROS Z
+        };
+        
+        poseMsg.pose.orientation = new geometry_msgs.QuaternionMsg
+        {
+            x = this.transform.rotation.x,
+            y = this.transform.rotation.z,  // Unity Z -> ROS Y
+            z = this.transform.rotation.y,  // Unity Y -> ROS Z
+            w = this.transform.rotation.w
+        };
+        
+        // Publish to a ROS topic for unity visualization
+        ros.Publish(robotNamespace + "/unity_pose", poseMsg);
+    }
+
+    private void ApplyMotionEffects(Vector3 velocity)
+    {
+        // Visual effects based on robot motion
+        float speed = velocity.magnitude;
+        
+        if (speed > 0.1f)
+        {
+            // Apply motion blur or particle effects for movement
+            ApplyMotionBlur(speed);
+        }
+    }
+
+    private void ApplyMotionBlur(float speed)
+    {
+        // Placeholder for motion blur implementation
+        // This could connect to Unity's post-processing stack
+    }
+}
+```
+
+## Advanced Visualization Techniques
+
+### Creating Photorealistic Environments
+
+For humanoid robots operating in realistic environments:
+
+```csharp
+// Example: Environment manager for realistic settings
+using UnityEngine;
+using UnityEngine.Rendering;
+
+public class EnvironmentManager : MonoBehaviour
+{
+    [Header("Environment Settings")]
+    public Light sunLight;
+    public Material skyboxMaterial;
+    public Gradient timeOfDayGradient;
+    
+    [Header("Weather Effects")]
+    public GameObject rainSystem;
+    public GameObject fogSystem;
+    
+    [Header("Dynamic Elements")]
+    public GameObject[] dynamicObstacles;
+    public float obstacleMovementSpeed = 1.0f;
+
+    private float timeOfDay = 0.5f; // 0-1, where 0.5 is noon
+
+    void Start()
+    {
+        SetupEnvironment();
+    }
+
+    void Update()
+    {
+        UpdateEnvironment();
+    }
+
+    private void SetupEnvironment()
+    {
+        // Configure the skybox
+        if (skyboxMaterial != null)
+        {
+            RenderSettings.skybox = skyboxMaterial;
+        }
+        
+        // Configure sun direction based on time of day
+        UpdateSunPosition();
+    }
+
+    private void UpdateEnvironment()
+    {
+        // Update time of day (could be controlled by ROS)
+        timeOfDay += Time.deltaTime * 0.001f; // Slowly advance time
+        if (timeOfDay > 1.0f) timeOfDay = 0.0f;
+        
+        // Update environment based on time
+        UpdateSunPosition();
+        UpdateLighting();
+        
+        // Move dynamic obstacles
+        MoveDynamicObstacles();
+    }
+
+    private void UpdateSunPosition()
+    {
+        if (sunLight != null)
+        {
+            // Calculate sun position based on time of day
+            float sunAngle = timeOfDay * 360f - 90f; // Sun rises at -90 degrees
+            float sunHeight = Mathf.Sin(sunAngle * Mathf.Deg2Rad);
+            
+            // Update sun rotation
+            sunLight.transform.rotation = Quaternion.Euler(
+                90f + sunHeight * 45f, // Elevation
+                sunAngle,              // Azimuth
+                0f                   // Tilt
+            );
+            
+            // Update light color based on time of day
+            float colorValue = timeOfDayGradient.Evaluate(timeOfDay);
+            sunLight.color = new Color(colorValue, colorValue, colorValue);
+        }
+    }
+
+    private void UpdateLighting()
+    {
+        // Adjust ambient lighting based on time of day
+        RenderSettings.ambientIntensity = 0.5f + Mathf.Sin(timeOfDay * Mathf.PI) * 0.3f;
+    }
+
+    private void MoveDynamicObstacles()
+    {
+        foreach (var obstacle in dynamicObstacles)
+        {
+            if (obstacle != null)
+            {
+                // Move obstacle in a pattern (e.g., circular)
+                float obstacleTime = Time.timeSinceLevelLoad * obstacleMovementSpeed;
+                float x = Mathf.Sin(obstacleTime) * 2f;
+                float z = Mathf.Cos(obstacleTime) * 2f;
+                
+                obstacle.transform.position = new Vector3(x, obstacle.transform.position.y, z);
+            }
+        }
+    }
+
+    public void SetWeatherCondition(string condition)
+    {
+        switch (condition)
+        {
+            case "rain":
+                if (rainSystem != null) rainSystem.SetActive(true);
+                if (fogSystem != null) fogSystem.SetActive(false);
+                break;
+            case "fog":
+                if (rainSystem != null) rainSystem.SetActive(false);
+                if (fogSystem != null) fogSystem.SetActive(true);
+                break;
+            case "clear":
+                if (rainSystem != null) rainSystem.SetActive(false);
+                if (fogSystem != null) fogSystem.SetActive(false);
+                break;
+        }
+    }
+}
+```
+
+### Performance Optimization
+
+For smooth real-time visualization of complex humanoid robots:
+
+```csharp
+// Example: Performance optimization manager
+using UnityEngine;
+using System.Collections.Generic;
+
+public class PerformanceOptimizer : MonoBehaviour
+{
+    [Header("LOD Settings")]
+    public Transform[] lodGroupRoots;
+    public float[] lodDistances = { 10f, 20f, 50f };
+    
+    [Header("Detail Settings")]
+    public bool enableShadows = true;
+    public bool enableReflections = true;
+    public int maxReflectionQuality = 2;
+    
+    private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
+    private List<Renderer> allRobotRenderers = new List<Renderer>();
+
+    void Start()
+    {
+        SetupLODSystems();
+        OptimizeMaterials();
+    }
+
+    void Update()
+    {
+        UpdateLOD();
+    }
+
+    private void SetupLODSystems()
+    {
+        foreach (var root in lodGroupRoots)
+        {
+            var lodGroup = root.gameObject.AddComponent<LODGroup>();
+            
+            LOD[] lods = new LOD[lodDistances.Length];
+            for (int i = 0; i < lodDistances.Length; i++)
+            {
+                lods[i] = new LOD(
+                    lodDistances[i] / Camera.main.farClipPlane, // Normalize to 0-1
+                    GetRenderersInLOD(root, i)
+                );
+            }
+            
+            lodGroup.SetLODs(lods);
+            lodGroup.RecalculateBounds();
+        }
+    }
+
+    private Renderer[] GetRenderersInLOD(Transform root, int lodLevel)
+    {
+        // Return different sets of renderers based on LOD level
+        List<Renderer> renderers = new List<Renderer>();
+        
+        var allRenderers = root.GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < allRenderers.Length; i++)
+        {
+            // At lower LODs, skip detail renderers
+            if (lodLevel == 0 || i % (lodLevel + 1) == 0)
+            {
+                renderers.Add(allRenderers[i]);
+            }
+        }
+        
+        return renderers.ToArray();
+    }
+
+    private void OptimizeMaterials()
+    {
+        // Store original materials and optimize for performance
+        var allRenderers = GetComponentsInChildren<Renderer>();
+        
+        foreach (var renderer in allRenderers)
+        {
+            originalMaterials[renderer] = renderer.materials;
+            
+            // Create optimized materials for real-time performance
+            Material[] optimizedMats = new Material[renderer.materials.Length];
+            for (int i = 0; i < renderer.materials.Length; i++)
+            {
+                optimizedMats[i] = CreateOptimizedMaterial(renderer.materials[i]);
+            }
+            
+            renderer.materials = optimizedMats;
+        }
+    }
+
+    private Material CreateOptimizedMaterial(Material original)
+    {
+        // Create a simplified version of the material for better performance
+        Material optimized = new Material(original.shader);
+        
+        // Copy only essential properties
+        optimized.color = original.color;
+        optimized.mainTexture = original.mainTexture;
+        
+        // Simplify or remove expensive properties
+        optimized.SetFloat("_Metallic", 0f);  // Remove metallic reflections
+        optimized.SetFloat("_Smoothness", 0.5f);  // Simplify smoothness
+        
+        return optimized;
+    }
+
+    private void UpdateLOD()
+    {
+        // Adjust LOD based on performance metrics
+        float frameTime = Time.deltaTime;
+        float targetFrameTime = 1.0f / 60.0f; // Target 60 FPS
+        
+        if (frameTime > targetFrameTime * 1.2f)
+        {
+            // Performance is degrading, reduce quality
+            ReduceQuality();
+        }
+        else if (frameTime < targetFrameTime * 0.8f)
+        {
+            // Performance is good, can increase quality
+            IncreaseQuality();
+        }
+    }
+
+    private void ReduceQuality()
+    {
+        // Reduce shadow resolution, disable reflections, etc.
+        QualitySettings.shadowResolution = ShadowResolution.Low;
+        
+        foreach (var renderer in allRobotRenderers)
+        {
+            // Simplify rendering for each robot part
+            if (renderer != null && renderer.material != null)
+            {
+                renderer.material.SetFloat("_Metallic", 0f);
+            }
+        }
+    }
+
+    private void IncreaseQuality()
+    {
+        // Increase quality settings if performance allows
+        QualitySettings.shadowResolution = enableShadows ? ShadowResolution.Medium : ShadowResolution.Low;
+    }
+}
+```
+
+## Best Practices and Considerations
+
+### 1. Data Synchronization
+
+Ensure that data flows efficiently between ROS2 and Unity:
+
+```csharp
+// Best practice: Use message filters for synchronized data
+using Unity.Robotics.ROSControl;
+using System.Collections.Generic;
+
+public class MessageSynchronizer : MonoBehaviour
+{
+    private Queue<sensor_msgs.JointStateMsg> jointStateQueue = new Queue<sensor_msgs.JointStateMsg>();
+    private Queue<sensor_msgs.ImuMsg> imuDataQueue = new Queue<sensor_msgs.ImuMsg>();
+    
+    private float timeSyncTolerance = 0.01f; // 10ms tolerance
+
+    public void EnqueueJointState(sensor_msgs.JointStateMsg msg)
+    {
+        jointStateQueue.Enqueue(msg);
+        ProcessSynchronizedMessages();
+    }
+    
+    public void EnqueueImuData(sensor_msgs.ImuMsg msg)
+    {
+        imuDataQueue.Enqueue(msg);
+        ProcessSynchronizedMessages();
+    }
+
+    private void ProcessSynchronizedMessages()
+    {
+        // Process synchronized message pairs
+        while (jointStateQueue.Count > 0 && imuDataQueue.Count > 0)
+        {
+            var jointMsg = jointStateQueue.Peek();
+            var imuMsg = imuDataQueue.Peek();
+            
+            float timeDiff = Mathf.Abs(
+                (float)(jointMsg.header.stamp.sec + jointMsg.header.stamp.nanosec / 1e9f) -
+                (float)(imuMsg.header.stamp.sec + imuMsg.header.stamp.nanosec / 1e9f)
+            );
+            
+            if (timeDiff <= timeSyncTolerance)
+            {
+                // Process synchronized data
+                jointStateQueue.Dequeue();
+                imuDataQueue.Dequeue();
+                ProcessSynchronizedData(jointMsg, imuMsg);
+            }
+            else if (jointMsg.header.stamp.sec < imuMsg.header.stamp.sec)
+            {
+                // Joint message is too old, discard
+                jointStateQueue.Dequeue();
+            }
+            else
+            {
+                // IMU message is too old, discard
+                imuDataQueue.Dequeue();
+            }
+        }
+    }
+
+    private void ProcessSynchronizedData(sensor_msgs.JointStateMsg jointMsg, sensor_msgs.ImuMsg imuMsg)
+    {
+        // Process the synchronized sensor data
+        UpdateRobotWithSynchronizedData(jointMsg, imuMsg);
+    }
+}
+```
+
+### 2. Coordinate System Consistency
+
+Handle coordinate system differences between ROS and Unity:
+
+```csharp
+// Best practice: Coordinate system conversion
+public static class CoordinateConverter
+{
+    // ROS: X=forward, Y=left, Z=up
+    // Unity: X=right, Y=up, Z=forward
+    public static Vector3 RosToUnity(Vector3 rosVector)
+    {
+        return new Vector3(
+            (float)rosVector.y,  // Y in ROS -> X in Unity (left->right)
+            (float)rosVector.z,  // Z in ROS -> Y in Unity (up->up)
+            (float)rosVector.x   // X in ROS -> Z in Unity (forward->forward)
+        );
+    }
+
+    public static Vector3 UnityToRos(Vector3 unityVector)
+    {
+        return new Vector3(
+            unityVector.z,  // Z in Unity -> X in ROS (forward->forward)
+            unityVector.x,  // X in Unity -> Y in ROS (right->left)
+            unityVector.y   // Y in Unity -> Z in ROS (up->up)
+        );
+    }
+
+    public static Quaternion RosToUnity(Quaternion rosQuaternion)
+    {
+        // Convert quaternion components from ROS to Unity coordinate system
+        return new Quaternion(
+            (float)rosQuaternion.y,  // i component
+            (float)rosQuaternion.z,  // j component
+            (float)rosQuaternion.x,  // k component
+            (float)rosQuaternion.w   // w component
+        );
+    }
+}
+```
+
+## Troubleshooting and Debugging
+
+### Common Issues and Solutions
+
+1. **Connection Issues**: Check ROS IP addresses, ports, and firewall settings
+2. **Synchronization Problems**: Ensure consistent update rates between systems
+3. **Coordinate System Mismatches**: Use consistent transformation methods
+4. **Performance Issues**: Optimize visualization based on complexity needs
+
+## Next Steps
+
+With Unity visualization integrated into your digital twin system, the next chapter will cover the project phase where you'll develop a complete humanoid robot simulation environment combining all the elements from this module: Gazebo physics simulation, sensor simulation, and Unity visualization.
+
+Use the personalization button to adjust content complexity based on your experience level, or use the translation button to read this in Urdu.

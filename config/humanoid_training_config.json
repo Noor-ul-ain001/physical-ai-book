@@ -1,0 +1,124 @@
+{
+  "state_dim": 122,
+  "action_dim": 20,
+  "max_timesteps": 1000000,
+  "start_timesteps": 10000,
+  "eval_freq": 5000,
+  "save_freq": 10000,
+  "episode_length": 1000,
+  "exploration_noise": 0.1,
+  "train_freq": 1,
+  "batch_size": 256,
+  "buffer_size": 1000000,
+  "model_save_path": "./models/",
+  "log_path": "./logs/",
+  
+  "rl_params": {
+    "hidden_dim": 512,
+    "actor_lr": 0.0003,
+    "critic_lr": 0.0003,
+    "alpha_lr": 0.0003,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "target_update_interval": 1,
+    "automatic_entropy_tuning": true,
+    "alpha": 0.2,
+    "policy_freq": 2
+  },
+  
+  "curriculum": {
+    "enabled": true,
+    "stages": [
+      {
+        "name": "balance",
+        "timesteps": 200000,
+        "success_threshold": 0.8,
+        "env_params": {
+          "gravity_factor": 0.5,
+          "support_spring": 0.1
+        }
+      },
+      {
+        "name": "stepping",
+        "timesteps": 200000,
+        "success_threshold": 0.7,
+        "env_params": {
+          "gravity_factor": 0.8,
+          "support_spring": 0.05,
+          "enable_forward_reward": false
+        }
+      },
+      {
+        "name": "walking",
+        "timesteps": 300000, 
+        "success_threshold": 0.75,
+        "env_params": {
+          "gravity_factor": 1.0,
+          "support_spring": 0.0,
+          "enable_forward_reward": true,
+          "forward_speed_target": 0.5
+        }
+      },
+      {
+        "name": "robust_walking",
+        "timesteps": 300000,
+        "success_threshold": 0.8,
+        "env_params": {
+          "gravity_factor": 1.0,
+          "support_spring": 0.0,
+          "enable_forward_reward": true,
+          "forward_speed_target": 0.8,
+          "perturbation_probability": 0.1,
+          "terrain_complexity": 0.3
+        }
+      }
+    ]
+  },
+  
+  "robot_config": {
+    "urdf_path": "robot_description/complete_humanoid.urdf.xacro",
+    "initial_position": [0.0, 0.0, 1.0],
+    "initial_orientation": [0.0, 0.0, 0.0, 1.0],
+    "mass_scaling": 1.0,
+    "damping_scaling": 1.0,
+    "friction_scaling": 1.0
+  },
+  
+  "sensors": {
+    "imu": {
+      "enabled": true,
+      "frequency": 100,
+      "noise": {
+        "linear_acceleration": 0.01,
+        "angular_velocity": 0.001
+      }
+    },
+    "force_torque": {
+      "enabled": true,
+      "frequency": 500
+    },
+    "cameras": {
+      "enabled": false,
+      "frequency": 30,
+      "resolution": [640, 480]
+    }
+  },
+  
+  "rewards": {
+    "weights": {
+      "survival": 1.0,
+      "forward_progress": 10.0,
+      "forward_velocity": 5.0,
+      "energy_efficiency": -0.01,
+      "balance": 5.0,
+      "smoothness": -0.1,
+      "joint_limits": -2.0,
+      "collision_penalty": -20.0
+    },
+    "termination_conditions": {
+      "max_tilt_angle": 45.0,
+      "min_height": 0.4,
+      "max_velocity": 10.0
+    }
+  }
+}

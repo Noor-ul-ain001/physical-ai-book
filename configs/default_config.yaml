@@ -1,0 +1,32 @@
+# Default configuration for Physical AI & Humanoid Robotics project
+
+robot:
+  model: "20dof_humanoid"
+  mass_distribution: "realistic"
+  joint_limits: "enabled"
+  control_frequency: 500  # Hz
+
+simulation:
+  physics_dt: 0.001  # 1ms physics timestep
+  rendering_dt: 0.01667  # 60Hz rendering
+  gravity: [0, 0, -9.81]
+  enable_cameras: false  # Disable for training speed
+  headless: true
+
+training:
+  algorithm: "sac"  # Soft Actor-Critic
+  max_episodes: 5000
+  max_episode_steps: 1000
+  batch_size: 256
+  buffer_size: 1000000
+  learning_rate: 0.0003
+  gamma: 0.99
+  tau: 0.005
+
+rewards:
+  forward_progress: 10.0
+  balance: 5.0
+  energy_efficiency: -0.01
+  smoothness: -0.1
+  survival: 1.0
+  foot_placement: 2.0

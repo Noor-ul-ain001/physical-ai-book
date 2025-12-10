@@ -1,0 +1,106 @@
+# Training configuration for Physical AI & Humanoid Robotics textbook project
+{
+  "training": {
+    "algorithm": "sac",
+    "max_episodes": 5000,
+    "max_episode_steps": 1000,
+    "save_frequency": 100,
+    "eval_frequency": 50,
+    "log_dir": "./logs/",
+    "model_save_path": "./models/",
+    "tensorboard_log": "./tb_logs/"
+  },
+  
+  "environment": {
+    "simulator": "isaac_sim",
+    "robot_model": "humanoid_20dof",
+    "physics_dt": 0.001,
+    "render": false,
+    "headless": true
+  },
+  
+  "reinforcement_learning": {
+    "gamma": 0.99,
+    "tau": 0.005,
+    "lr_actor": 0.0003,
+    "lr_critic": 0.0003,
+    "lr_alpha": 0.0003,
+    "alpha": 0.2,
+    "batch_size": 256,
+    "buffer_size": 1000000,
+    "warmup_steps": 10000,
+    "gradient_steps": 1
+  },
+  
+  "robot_control": {
+    "control_freq": 500,
+    "max_torque": 50.0,
+    "action_noise_std": 0.1,
+    "observation_history": 1
+  },
+  
+  "rewards": {
+    "forward_progress_weight": 10.0,
+    "balance_weight": 5.0,
+    "energy_efficiency_weight": -0.01,
+    "smoothness_weight": -0.1,
+    "survival_bonus": 1.0,
+    "foot_placement_weight": 2.0
+  },
+  
+  "curriculum_learning": {
+    "enabled": true,
+    "stages": [
+      {
+        "name": "balance_training",
+        "episodes": 1000,
+        "target_velocity": 0.0,
+        "terrain_complexity": 0.1,
+        "success_threshold": 0.8
+      },
+      {
+        "name": "stepping_training", 
+        "episodes": 1000,
+        "target_velocity": 0.2,
+        "terrain_complexity": 0.2,
+        "success_threshold": 0.7
+      },
+      {
+        "name": "walking_training",
+        "episodes": 2000,
+        "target_velocity": 0.5,
+        "terrain_complexity": 0.3,
+        "success_threshold": 0.75
+      },
+      {
+        "name": "robust_walking",
+        "episodes": 1000,
+        "target_velocity": 0.6,
+        "terrain_complexity": 0.5,
+        "external_force_probability": 0.1,
+        "success_threshold": 0.8
+      }
+    ]
+  },
+  
+  "sensors": {
+    "camera_enabled": true,
+    "imu_enabled": true,
+    "force_torque_enabled": true,
+    "lidar_enabled": false,
+    "camera_resolution": [640, 480],
+    "imu_frequency": 100,
+    "ft_frequency": 500
+  },
+  
+  "evaluation": {
+    "num_episodes": 10,
+    "metrics": [
+      "average_reward",
+      "success_rate", 
+      "walking_speed",
+      "balance_stability",
+      "energy_efficiency"
+    ]
+  }
+}

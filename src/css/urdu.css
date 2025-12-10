@@ -1,0 +1,210 @@
+/**
+ * Urdu Language Styles
+ *
+ * Provides proper RTL (right-to-left) formatting and typography for Urdu content.
+ */
+
+/* Urdu content container */
+.urdu-content {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Pak Nastaleeq', 'Nafees Nastaleeq', Arial, sans-serif;
+  line-height: 2;
+  /* Increased line height for better Urdu readability */
+  font-size: 1.1em;
+  /* Slightly larger font for Urdu */
+}
+
+/* Urdu headings */
+.urdu-content h1,
+.urdu-content h2,
+.urdu-content h3,
+.urdu-content h4,
+.urdu-content h5,
+.urdu-content h6 {
+  direction: rtl;
+  text-align: right;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+/* Urdu paragraphs */
+.urdu-content p {
+  direction: rtl;
+  text-align: right;
+  margin-bottom: 1em;
+  line-height: 2.2;
+}
+
+/* Urdu lists */
+.urdu-content ul,
+.urdu-content ol {
+  direction: rtl;
+  text-align: right;
+  padding-right: 2em;
+  padding-left: 0;
+}
+
+.urdu-content li {
+  direction: rtl;
+  text-align: right;
+  margin-bottom: 0.5em;
+}
+
+/* Code blocks in Urdu content (keep LTR for code) */
+.urdu-content pre,
+.urdu-content code {
+  direction: ltr;
+  text-align: left;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* Inline code */
+.urdu-content code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* Block quotes in Urdu */
+.urdu-content blockquote {
+  direction: rtl;
+  text-align: right;
+  border-right: 4px solid #e0e0e0;
+  border-left: none;
+  padding-right: 1em;
+  padding-left: 0;
+  margin-right: 0;
+  margin-left: 1em;
+  font-style: italic;
+  color: #666;
+}
+
+/* Tables in Urdu content */
+.urdu-content table {
+  direction: rtl;
+}
+
+.urdu-content th,
+.urdu-content td {
+  text-align: right;
+  padding: 0.75em;
+}
+
+/* Links in Urdu content */
+.urdu-content a {
+  color: #1877f2;
+  text-decoration: none;
+}
+
+.urdu-content a:hover {
+  text-decoration: underline;
+}
+
+/* Bilingual content layout */
+.bilingual-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.content-english {
+  direction: ltr;
+  text-align: left;
+  padding: 1rem;
+  border-right: 2px solid #e0e0e0;
+}
+
+.content-urdu {
+  direction: rtl;
+  text-align: right;
+  padding: 1rem;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', Arial, sans-serif;
+  line-height: 2;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .bilingual-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .content-english {
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 1rem;
+  }
+
+  .urdu-content {
+    font-size: 1em;
+    line-height: 1.9;
+  }
+}
+
+/* Translation notice */
+.translation-notice {
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  direction: rtl;
+  text-align: right;
+}
+
+.translation-notice p {
+  margin: 0;
+  color: #1565c0;
+  font-weight: 600;
+}
+
+/* Loading state for translation */
+.translating-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #fff9e6;
+  border: 1px solid #ffd54f;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.translating-indicator .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffd54f;
+  border-top-color: #f57c00;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Technical terms in Urdu (keep English term visible) */
+.technical-term {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.technical-term .urdu-text {
+  font-weight: 600;
+}
+
+.technical-term .english-text {
+  font-size: 0.85em;
+  color: #666;
+  direction: ltr;
+}
+
+/* Ensure proper font loading */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');

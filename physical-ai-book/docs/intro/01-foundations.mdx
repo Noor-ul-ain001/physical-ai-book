@@ -1,0 +1,55 @@
+---
+sidebar_label: Weeks 1-2 Foundations
+---
+
+# Foundations: Robotics, AI, and Humanoid Systems (Weeks 1-2)
+
+## Week 1: Introduction to Embodied AI and Humanoid Challenges
+
+### Understanding Embodied AI
+
+Embodied AI differs fundamentally from traditional digital AI by requiring systems to interact with the physical world. While digital AI operates on text, images, and virtual environments, embodied AI must handle:
+
+- **Real-world physics and constraints**: Dealing with gravity, friction, and momentum
+- **Real-time decision making**: Continuous operation in dynamic environments
+- **Sensorimotor coordination**: Processing sensory data to generate appropriate motor commands
+- **Uncertainty and noise**: Handling imperfect sensors and actuators
+- **Safety and reliability**: Ensuring safe operation with physical systems
+
+For humanoid robots, these challenges are amplified because they must operate in human environments with human-designed tools and infrastructure.
+
+### The Humanoid Robotics Challenge
+
+Humanoid robots face unique challenges that make them particularly difficult to develop:
+
+1. **High Degrees of Freedom**: With 20+ joints, humanoid robots have extremely high-dimensional action spaces
+2. **Balance Requirements**: Maintaining balance while performing tasks requires constant control
+3. **Human-Centered Design**: Operating in human environments requires human-like capabilities
+4. **Complex Control**: Coordinating multiple limbs for locomotion and manipulation
+5. **Computational Demands**: Real-time processing of high-dimensional sensor data
+
+### Mathematical Foundations
+
+To understand humanoid robotics, you need a strong foundation in several mathematical areas:
+
+#### Linear Algebra in Robotics
+
+Vectors and matrices are fundamental for representing positions, orientations, and transformations:
+
+$$\mathbf{T} = \begin{bmatrix}
+\mathbf{R} & \mathbf{p} \\
+\mathbf{0}^T & 1
+\end{bmatrix}$$
+
+Where $\mathbf{R}$ is a 3×3 rotation matrix and $\mathbf{p}$ is a 3×1 position vector.
+
+```mermaid
+graph TD
+    A[Robot State] --> B[Position Vector]
+    A --> C[Orientation Quaternion]
+    A --> D[Joint Angles]
+    B --> E[Homogeneous Transform]
+    C --> E
+    D --> F[Forward Kinematics]
+    E --> F
+    F --> G[End Effector Pose]

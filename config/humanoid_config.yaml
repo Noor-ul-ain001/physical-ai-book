@@ -1,0 +1,157 @@
+# Isaac Sim configuration for the complete humanoid robot
+# config/humanoid_config.yaml
+
+humanoid_robot:
+  # Physical properties
+  mass_distribution:
+    pelvis: 8.0
+    torso: 5.0
+    head: 3.0
+    arm: 2.0
+    leg: 5.0
+  
+  # Joint limits (in radians)
+  joint_limits:
+    hip_yaw: [-0.52, 0.52]      # ±30 degrees
+    hip_pitch: [-1.57, 1.57]    # ±90 degrees 
+    hip_roll: [-0.35, 1.05]     # [-20, 60] degrees
+    knee: [-1.57, 0.0]          # [-90, 0] degrees (knees bend backward)
+    ankle_pitch: [-0.78, 0.52]  # [-45, 30] degrees
+    ankle_roll: [-0.35, 0.35]   # ±20 degrees
+    
+    shoulder_yaw: [-0.79, 0.79]   # ±45 degrees
+    shoulder_pitch: [-1.57, 1.57] # ±90 degrees
+    elbow: [-1.57, 1.57]          # [-90, 90] degrees
+    wrist: [-1.05, 1.05]          # ±60 degrees
+    
+    neck: [-0.52, 0.52]          # ±30 degrees
+
+  # Control parameters
+  control:
+    position_gain: 100.0    # P gain for position control
+    velocity_gain: 10.0     # D gain for velocity control
+    max_torque: 100.0       # Maximum torque limit
+    control_frequency: 500  # Hz
+
+  # Sensor configuration
+  sensors:
+    imu:
+      enabled: true
+      update_frequency: 100  # Hz
+      noise:
+        linear_acceleration:
+          mean: [0.0, 0.0, 0.0]
+          std_dev: [0.017, 0.017, 0.017]  # 1.7 mg
+        angular_velocity:
+          mean: [0.0, 0.0, 0.0]
+          std_dev: [0.001, 0.001, 0.001]  # 0.06 deg/s
+
+    force_torque:
+      enabled: true
+      update_frequency: 500  # Hz
+      noise:
+        force:
+          mean: [0.0, 0.0, 0.0]
+          std_dev: [0.1, 0.1, 0.1]
+        torque:
+          mean: [0.0, 0.0, 0.0]
+          std_dev: [0.01, 0.01, 0.01]
+
+    cameras:
+      head_camera:
+        enabled: true
+        resolution: [640, 480]
+        field_of_view: 60  # degrees
+        update_frequency: 30
+
+  # Balance parameters
+  balance:
+    com_height_target: 0.85  # Target CoM height in meters
+    support_polygon_margin: 0.05  # Safety margin for CoM support
+    max_com_deviation: 0.15  # Max allowed CoM deviation from support polygon
+
+  # Walking gait parameters
+  walking:
+    step_height: 0.05      # 5cm step height
+    step_length: 0.20      # 20cm step length
+    step_duration: 0.8     # 800ms per step
+    double_support_ratio: 0.2  # 20% double support phase
+    nominal_com_height: 0.85   # Nominal walking height
+
+  # Learning parameters for RL
+  reinforcement_learning:
+    observation_space_dim: 122  # Example: 20*6 (joint pos/vel/acc) + 2 (contacts) + 4 (orientation) + 3 (velocity) + other
+    action_space_dim: 20        # 20 actuated joints
+    max_episode_steps: 1000     # Max steps per episode
+    reward_weights:
+      forward_progress: 10.0
+      balance: 5.0
+      energy_efficiency: -0.01
+      smoothness: -0.1
+      survival: 1.0
+
+# Isaac Sim simulation settings
+simulation:
+  physics:
+    solver:
+      type: "TGS"           # Time-stepping Gauss-Seidel
+      iterations: 20        # Position solver iterations
+      velocity_iterations: 20  # Velocity solver iterations
+    timestep: 0.001         # 1ms physics timestep
+    substeps: 2             # 2 substeps per timestep (effective 500Hz)
+    
+  rendering:
+    width: 1280
+    height: 720
+    resolution: "HD"
+    show_ui: true
+
+  environment:
+    gravity: [0, 0, -9.81]  # Earth gravity
+    ground_plane:
+      enabled: true
+      size: [100, 100]
+      friction: [0.7, 0.7]  # Static and dynamic friction
+
+# Training configuration
+training:
+  algorithm: "SAC"          # Soft Actor-Critic for continuous control
+  batch_size: 256
+  replay_buffer_size: 1000000
+  learning_rate: 0.0003
+  discount_factor: 0.99
+  soft_update_rate: 0.005   # Tau for target network updates
+  target_update_interval: 1
+  automatic_entropy_tuning: true
+  target_entropy: null      # Will be calculated automatically
+
+  # Curriculum learning stages
+  curriculum:
+    stages:
+      - name: "balance_stabilization"
+        steps: 50000
+        success_threshold: 0.85
+        env_modifiers:
+          reduced_gravity: 0.5
+          support_springs: true
+      
+      - name: "stepping_in_place"
+        steps: 100000
+        success_threshold: 0.75
+        env_modifiers:
+          enable_forward_reward: false
+          stepping_only: true
+      
+      - name: "forward_locomotion"
+        steps: 200000
+        success_threshold: 0.70
+        env_modifiers:
+          normal_gravity: true
+          forward_progress_reward: true
+      
+      - name: "robust_locomotion"
+        steps: 300000
+        success_threshold: 0.80
+        env_modifiers:
+          random_perturbations: true
+          varying_terrain: true

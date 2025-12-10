@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Isaac Sim launch file for the humanoid robot simulation -->
+<launch>
+  <!-- Arguments -->
+  <arg name="headless_mode" default="False" description="Run in headless mode"/>
+  <arg name="enable_cameras" default="True" description="Enable camera sensors"/>
+  <arg name="enable_physics" default="True" description="Enable physics simulation"/>
+  
+  <!-- Isaac Sim application -->
+  <executable 
+    cmd="python -m omni.isaac.launcher.cli --config=standalone --world=worlds/small_room.usd" 
+    name="isaac_sim" 
+    output="screen"
+    launch-prefix="bash -c 'cd $(find /opt/nvidia/isaac-sim -type f -name \"isaac-sim.sh\" | head -n 1) &amp;&amp;"
+  />
+  
+  <!-- Robot spawning node -->
+  <node 
+    pkg="isaac_ros_launch" 
+    exec="spawn_robot.py" 
+    name="robot_spawner" 
+    output="screen"
+    args="--robot-urdf-path $(find-pkg-share robot_description)/humanoid.urdf.xacro
+          --robot-name humanoid_robot
+          --position 0 0 1.0
+          --orientation 0 0 0 1">
+    <param name="robot_description" value="$(find-pkg-share robot_description)/humanoid.urdf.xacro"/>
+  </node>
+  
+  <!-- Isaac ROS bridge -->
+  <node 
+    pkg="isaac_ros_bridge" 
+    exec="ros_bridge_node" 
+    name="isaac_ros_bridge" 
+    output="screen">
+    <param name="use_sim_time" value="True"/>
+  </node>
+  
+  <!-- Visual SLAM node -->
+  <node 
+    pkg="vslam_system" 
+    exec="vslam_node" 
+    name="vslam_node" 
+    output="screen">
+    <param name="camera_topic" value="/humanoid_robot/head_camera/image_raw"/>
+    <param name="imu_topic" value="/humanoid_robot/imu/data"/>
+  </node>
+  
+  <!-- Navigation stack -->
+  <include file="$(find-pkg-share nav2_bringup)/launch/navigation_launch.py"/>
+  
+  <!-- RViz for visualization -->
+  <node 
+    pkg="rviz2" 
+    exec="rviz2" 
+    name="rviz2" 
+    args="-d $(find-pkg-share physical_ai_book)/rviz/humanoid_navigation.rviz"
+    if="$(eval arg('enable_cameras'))">
+  </node>
+</launch>

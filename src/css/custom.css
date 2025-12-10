@@ -1,0 +1,539 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
+
+/* Import Urdu language styles */
+@import './urdu.css';
+
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-font-family-base: "Space Grotesk", system-ui, sans-serif;
+  --ifm-font-family-monospace: "Space Grotesk", system-ui, sans-serif;
+  --ifm-color-primary: #252b50;
+  --ifm-color-primary-dark: #1c203f;
+  --ifm-color-primary-darker: #15192f;
+  --ifm-color-primary-darkest: #0e1120;
+  --ifm-color-primary-light: #303867;
+  --ifm-color-primary-lighter: #3b4380;
+  --ifm-color-primary-lightest: #4a54a0;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(37, 43, 80, 0.1);
+
+  --ifm-font-color-base: #1a1f36; /* Dark blue text */
+  --ifm-background-color: #f5f7ff; /* Light blue background */
+  --ifm-color-info-light: #4a54a0; /* Light blue for info */
+  --ifm-color-info: #303867; /* Medium blue for info */
+  --ifm-color-info-dark: #252b50; /* Dark blue for info */
+  
+  /* Additional blue theme variables */
+  --ifm-color-secondary: #4a54a0;
+  --ifm-color-secondary-dark: #3b4380;
+  --ifm-color-secondary-darker: #303867;
+  --ifm-color-secondary-light: #5c67b8;
+  --ifm-color-secondary-lighter: #6f7ad0;
+  
+  --ifm-color-warning: #ff9d00;
+  --ifm-color-warning-dark: #cc7e00;
+  --ifm-color-warning-light: #ffb740;
+  
+  --ifm-color-success: #00a86b;
+  --ifm-color-success-dark: #008554;
+  --ifm-color-success-light: #00c986;
+  
+  --ifm-color-danger: #ff4757;
+  --ifm-color-danger-dark: #cc3845;
+  --ifm-color-danger-light: #ff6b78;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #4a54a0;
+  --ifm-color-primary-dark: #3b4380;
+  --ifm-color-primary-darker: #303867;
+  --ifm-color-primary-darkest: #252b50;
+  --ifm-color-primary-light: #5c67b8;
+  --ifm-color-primary-lighter: #6f7ad0;
+  --ifm-color-primary-lightest: #8a94e6;
+  --docusaurus-highlighted-code-line-bg: rgba(74, 84, 160, 0.3);
+
+  --ifm-background-color: #0a0e1a; /* Very dark blue background */
+  --ifm-font-color-base: #e6e9ff; /* Light blue text */
+  --ifm-color-info-light: #6f7ad0;
+  --ifm-color-info: #4a54a0;
+  --ifm-color-info-dark: #3b4380;
+  
+  /* Dark mode secondary colors */
+  --ifm-color-secondary: #3b4380;
+  --ifm-color-secondary-dark: #303867;
+  --ifm-color-secondary-darker: #252b50;
+  --ifm-color-secondary-light: #4a54a0;
+  --ifm-color-secondary-lighter: #5c67b8;
+  
+  --ifm-color-warning: #ffb740;
+  --ifm-color-warning-dark: #ff9d00;
+  --ifm-color-warning-light: #ffd180;
+  
+  --ifm-color-success: #00c986;
+  --ifm-color-success-dark: #00a86b;
+  --ifm-color-success-light: #34e5a8;
+  
+  --ifm-color-danger: #ff6b78;
+  --ifm-color-danger-dark: #ff4757;
+  --ifm-color-danger-light: #ff8e99;
+}
+
+/* Apply font to body if :root doesn't fully cover it */
+body {
+  font-family: var(--ifm-font-family-base);
+  background-color: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}
+
+/* Custom footer styling to match theme colors */
+.footer {
+  background-color: var(--ifm-color-primary) !important;
+  color: #f5f7ff !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer__link-item {
+  color: #e6e9ff !important;
+  opacity: 0.9;
+  transition: all 0.2s ease;
+}
+
+.footer__link-item:hover {
+  color: #ffffff !important;
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.footer__title {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.footer__copyright {
+  color: rgba(230, 233, 255, 0.8) !important;
+  font-size: 0.9rem;
+}
+
+.footer__logo {
+  filter: brightness(0) invert(1);
+}
+
+/* Custom navbar styling to complement the footer */
+.navbar {
+  background-color: var(--ifm-color-primary) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .navbar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.navbar__link {
+  color: #e6e9ff !important;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  opacity: 0.9;
+}
+
+.navbar__link:hover {
+  color: #ffffff !important;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.navbar__title {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.navbar__toggle {
+  color: #e6e9ff !important;
+}
+
+.navbar__toggle:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-sidebar {
+  background-color: var(--ifm-color-primary) !important;
+}
+
+.navbar-sidebar__brand .navbar__title {
+  color: #ffffff !important;
+}
+
+.navbar-sidebar__back {
+  color: #e6e9ff !important;
+}
+
+.navbar-sidebar__back:hover {
+  color: #ffffff !important;
+}
+
+/* Hero section improvements */
+.hero {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%);
+  color: #ffffff;
+}
+
+.hero__title {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.hero__subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Button styling */
+.button {
+  transition: all 0.2s ease;
+}
+
+.button--primary {
+  background-color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #ffffff;
+}
+
+.button--primary:hover {
+  background-color: var(--ifm-color-primary-light);
+  border-color: var(--ifm-color-primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 43, 80, 0.3);
+}
+
+.button--secondary {
+  background-color: transparent;
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.button--secondary:hover {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+}
+
+/* Card styling */
+.card {
+  border: 1px solid rgba(37, 43, 80, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 4px 16px rgba(37, 43, 80, 0.1);
+  transform: translateY(-2px);
+}
+
+[data-theme='dark'] .card {
+  border-color: rgba(74, 84, 160, 0.2);
+}
+
+[data-theme='dark'] .card:hover {
+  border-color: var(--ifm-color-primary-light);
+  box-shadow: 0 4px 16px rgba(74, 84, 160, 0.2);
+}
+
+/* Code block styling */
+.codeBlockContainer {
+  border: 1px solid rgba(37, 43, 80, 0.1);
+  border-radius: 6px;
+}
+
+[data-theme='dark'] .codeBlockContainer {
+  border-color: rgba(74, 84, 160, 0.2);
+}
+
+/* Table styling */
+table {
+  border: 1px solid rgba(37, 43, 80, 0.1);
+  border-radius: 6px;
+}
+
+[data-theme='dark'] table {
+  border-color: rgba(74, 84, 160, 0.2);
+}
+
+thead {
+  background-color: rgba(37, 43, 80, 0.05);
+  color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] thead {
+  background-color: rgba(74, 84, 160, 0.1);
+}
+
+th {
+  border-bottom: 2px solid var(--ifm-color-primary);
+}
+
+/* Alert styling */
+.alert {
+  border: 1px solid;
+  border-radius: 6px;
+}
+
+.alert--info {
+  background-color: rgba(74, 84, 160, 0.1);
+  border-color: var(--ifm-color-info);
+  color: var(--ifm-color-info-dark);
+}
+
+.alert--warning {
+  background-color: rgba(255, 157, 0, 0.1);
+  border-color: var(--ifm-color-warning);
+  color: var(--ifm-color-warning-dark);
+}
+
+.alert--success {
+  background-color: rgba(0, 168, 107, 0.1);
+  border-color: var(--ifm-color-success);
+  color: var(--ifm-color-success-dark);
+}
+
+.alert--danger {
+  background-color: rgba(255, 71, 87, 0.1);
+  border-color: var(--ifm-color-danger);
+  color: var(--ifm-color-danger-dark);
+}
+
+[data-theme='dark'] .alert--info {
+  background-color: rgba(74, 84, 160, 0.2);
+}
+
+[data-theme='dark'] .alert--warning {
+  background-color: rgba(255, 157, 0, 0.2);
+}
+
+[data-theme='dark'] .alert--success {
+  background-color: rgba(0, 168, 107, 0.2);
+}
+
+[data-theme='dark'] .alert--danger {
+  background-color: rgba(255, 71, 87, 0.2);
+}
+
+/* Badge styling */
+.badge {
+  border: 1px solid transparent;
+}
+
+.badge--primary {
+  background-color: var(--ifm-color-primary);
+  color: #ffffff;
+}
+
+.badge--secondary {
+  background-color: var(--ifm-color-secondary);
+  color: #ffffff;
+}
+
+/* Sidebar styling */
+.menu {
+  border-right: 1px solid rgba(37, 43, 80, 0.1);
+}
+
+[data-theme='dark'] .menu {
+  border-right-color: rgba(74, 84, 160, 0.2);
+}
+
+.menu__link {
+  transition: all 0.2s ease;
+}
+
+.menu__link:hover {
+  color: var(--ifm-color-primary);
+  background: rgba(37, 43, 80, 0.05);
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background: rgba(74, 84, 160, 0.1);
+}
+
+.menu__link--active {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  background: rgba(37, 43, 80, 0.05);
+  border-right: 3px solid var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .menu__link--active {
+  background: rgba(74, 84, 160, 0.1);
+}
+
+/* Pagination */
+.pagination-nav__link {
+  border: 1px solid rgba(37, 43, 80, 0.1);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 2px 8px rgba(37, 43, 80, 0.1);
+}
+
+[data-theme='dark'] .pagination-nav__link {
+  border-color: rgba(74, 84, 160, 0.2);
+}
+
+[data-theme='dark'] .pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary-light);
+}
+
+/* Search styling */
+.searchBox {
+  border: 1px solid rgba(37, 43, 80, 0.2);
+  border-radius: 4px;
+}
+
+.searchBox:focus-within {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 2px rgba(37, 43, 80, 0.2);
+}
+
+[data-theme='dark'] .searchBox {
+  border-color: rgba(74, 84, 160, 0.3);
+}
+
+[data-theme='dark'] .searchBox:focus-within {
+  border-color: var(--ifm-color-primary-light);
+  box-shadow: 0 0 0 2px rgba(74, 84, 160, 0.3);
+}
+
+/* Link styling */
+a {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--ifm-color-primary-light);
+  text-decoration: underline;
+}
+
+[data-theme='dark'] a {
+  color: var(--ifm-color-primary-lighter);
+}
+
+[data-theme='dark'] a:hover {
+  color: #ffffff;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(74, 84, 160, 0.3);
+  color: inherit;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(37, 43, 80, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(37, 43, 80, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 43, 80, 0.5);
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: rgba(74, 84, 160, 0.1);
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: rgba(74, 84, 160, 0.4);
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 84, 160, 0.6);
+}
+
+/* Blockquote styling */
+blockquote {
+  border-left: 4px solid var(--ifm-color-primary);
+  background: rgba(37, 43, 80, 0.05);
+  color: var(--ifm-color-primary-dark);
+  padding: 1rem;
+  border-radius: 0 6px 6px 0;
+  margin-left: 0;
+}
+
+[data-theme='dark'] blockquote {
+  background: rgba(74, 84, 160, 0.1);
+  color: var(--ifm-color-primary-lighter);
+}
+
+/* HR styling */
+hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--ifm-color-primary), transparent);
+  margin: 2rem 0;
+}
+
+[data-theme='dark'] hr {
+  background: linear-gradient(to right, transparent, var(--ifm-color-primary-light), transparent);
+}
+
+/* RTL support for Urdu locale */
+html[lang="ur"] {
+  direction: rtl;
+}
+
+html[lang="ur"] .navbar {
+  direction: rtl;
+}
+
+html[lang="ur"] .footer {
+  direction: rtl;
+}
+
+html[lang="ur"] .menu {
+  border-right: none;
+  border-left: 1px solid rgba(37, 43, 80, 0.1);
+}
+
+[data-theme='dark'] html[lang="ur"] .menu {
+  border-left-color: rgba(74, 84, 160, 0.2);
+}
+
+html[lang="ur"] .menu__link--active {
+  border-right: none;
+  border-left: 3px solid var(--ifm-color-primary);
+}
+
+html[lang="ur"] blockquote {
+  border-left: none;
+  border-right: 4px solid var(--ifm-color-primary);
+  border-radius: 6px 0 0 6px;
+}
+
+/* Urdu font for all content when locale is Urdu */
+html[lang="ur"] body {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Pak Nastaleeq', 'Nafees Nastaleeq', Arial, sans-serif;
+  line-height: 1.8;
+}

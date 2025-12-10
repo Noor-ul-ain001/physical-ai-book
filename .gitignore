@@ -1,0 +1,88 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.log
+coverage/
+.nyc_output/
+.next/
+.nuxt/
+out/
+
+# Environment variables
+.env*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Isaac Sim
+isaac_sim_logs/
+isaac_sim_cache/
+isaac_sim_tmp/
+
+# Isaac Gym
+isaacgym/
+isaacgymenvs/
+
+# Training outputs
+models/
+checkpoints/
+logs/
+tb_logs/
+runs/
+
+# Docusaurus
+.cache/
+.docusaurus/
+*.lock
+
+# Simulation data
+simulation_data/
+recordings/
+
+# Private credentials
+credentials.json
+secrets.json
+*.secret
+
+# User-specific files
+*.user
+*.suo
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

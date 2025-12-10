@@ -1,0 +1,981 @@
+---
+sidebar_position: 5
+---
+
+# Module 3 Project: Complete Humanoid Digital Twin with Isaac Sim, ROS, and RL
+
+## Project Overview
+
+Welcome to the Module 3 Capstone Project! In this comprehensive project, you'll integrate all the concepts from this module to create a complete digital twin system for a humanoid robot. This project combines Isaac Sim physics simulation, Isaac ROS communication, vSLAM navigation capabilities, and reinforcement learning for dynamic behaviors.
+
+### Project Goals
+
+1. **Build a complete humanoid robot model** with accurate physics properties
+2. **Implement vSLAM system** for navigation in indoor environments 
+3. **Train locomotion skills** using reinforcement learning
+4. **Integrate with ROS2 ecosystem** for real-world transfer potential
+5. **Create a cohesive digital twin system** with real-time synchronization
+
+### Prerequisites
+
+Before starting this project, ensure you have:
+- Completed all previous chapters in Module 3
+- Working Isaac Sim installation with ROS2 bridge
+- Basic familiarity with reinforcement learning concepts
+- Python and C++ development environment set up
+
+## Phase 1: Complete Robot Model Development
+
+### 1.1 Creating the Humanoid URDF with Sensors
+
+First, let's create a complete humanoid robot model with all necessary sensors:
+
+```xml
+<!-- Create: complete_humanoid.urdf.xacro -->
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="complete_humanoid">
+  
+  <!-- Constants -->
+  <xacro:property name="M_PI" value="3.1415926535897931"/>
+  <xacro:property name="humanoid_mass" value="60.0"/>
+  <xacro:property name="link_mass" value="1.0"/>
+  <xacro:property name="head_mass" value="3.0"/>
+  <xacro:property name="arm_mass" value="2.0"/>
+  <xacro:property name="leg_mass" value="5.0"/>
+  
+  <!-- Materials -->
+  <material name="black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+  <material name="blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+  <material name="green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.5 0.5 0.5 1.0"/>
+  </material>
+  <material name="silver">
+    <color rgba="0.75 0.75 0.75 1.0"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+  <material name="white">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+  <material name="yellow">
+    <color rgba="0.8 0.8 0.0 1.0"/>
+  </material>
+  
+  <!-- Base plate for fixing to world -->
+  <link name="base_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- Torso/Pelvis -->
+  <link name="pelvis">
+    <inertial>
+      <mass value="8.0"/>
+      <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.05"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.25 0.18 0.4"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.25 0.18 0.4"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="base_to_pelvis" type="fixed">
+    <parent link="base_link"/>
+    <child link="pelvis"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- Spine -->
+  <link name="torso">
+    <inertial>
+      <mass value="5.0"/>
+      <origin xyz="0 0 0.2" rpy="0 0 0"/>
+      <inertia ixx="0.08" ixy="0" ixz="0" iyy="0.08" iyz="0" izz="0.03"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.15 0.35"/>
+      </geometry>
+      <material name="silver"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.15 0.35"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="torso_joint" type="fixed">
+    <parent link="pelvis"/>
+    <child link="torso"/>
+    <origin xyz="0 0 0.4" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Head -->
+  <link name="head">
+    <inertial>
+      <mass value="${head_mass}"/>
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="neck_joint" type="revolute">
+    <parent link="torso"/>
+    <child link="head"/>
+    <origin xyz="0 0 0.35" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-M_PI/3}" upper="${M_PI/3}" effort="5" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <!-- Left Arm -->
+  <link name="left_shoulder">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <inertia ixx="0.003" ixy="0" ixz="0" iyy="0.003" iyz="0" izz="0.001"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_shoulder_yaw_joint" type="revolute">
+    <parent link="torso"/>
+    <child link="left_shoulder"/>
+    <origin xyz="0 0.12 0.25" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI/2}" effort="20" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <link name="left_upper_arm">
+    <inertial>
+      <mass value="${arm_mass}"/>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <inertia ixx="0.04" ixy="0" ixz="0" iyy="0.04" iyz="0" izz="0.01"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.3"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.3"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_shoulder_pitch_joint" type="revolute">
+    <parent link="left_shoulder"/>
+    <child link="left_upper_arm"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI}" effort="20" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <link name="left_forearm">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.005"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.2"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.2"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_elbow_joint" type="revolute">
+    <parent link="left_upper_arm"/>
+    <child link="left_forearm"/>
+    <origin xyz="0 0 -0.3" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI/2}" effort="10" velocity="${M_PI}"/>
+    <dynamics damping="0.3" friction="0.1"/>
+  </joint>
+
+  <link name="left_hand">
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0.05 0 -0.02" rpy="0 0 0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0.05 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.12 0.08 0.04"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0.05 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.12 0.08 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_wrist_joint" type="revolute">
+    <parent link="left_forearm"/>
+    <child link="left_hand"/>
+    <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-M_PI/4}" upper="${M_PI/4}" effort="5" velocity="${M_PI}"/>
+    <dynamics damping="0.2" friction="0.05"/>
+  </joint>
+
+  <!-- Right Arm (mirror left arm) -->
+  <link name="right_shoulder">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <inertia ixx="0.003" ixy="0" ixz="0" iyy="0.003" iyz="0" izz="0.001"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.1"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_shoulder_yaw_joint" type="revolute">
+    <parent link="torso"/>
+    <child link="right_shoulder"/>
+    <origin xyz="0 -0.12 0.25" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI/2}" effort="20" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <link name="right_upper_arm">
+    <inertial>
+      <mass value="${arm_mass}"/>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <inertia ixx="0.04" ixy="0" ixz="0" iyy="0.04" iyz="0" izz="0.01"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.3"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.3"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_shoulder_pitch_joint" type="revolute">
+    <parent link="right_shoulder"/>
+    <child link="right_upper_arm"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI}" upper="${M_PI/2}" effort="20" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <link name="right_forearm">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.005"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.2"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.2"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_elbow_joint" type="revolute">
+    <parent link="right_upper_arm"/>
+    <child link="right_forearm"/>
+    <origin xyz="0 0 -0.3" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI/2}" effort="10" velocity="${M_PI}"/>
+    <dynamics damping="0.3" friction="0.1"/>
+  </joint>
+
+  <link name="right_hand">
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0.05 0 -0.02" rpy="0 0 0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0.05 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.12 0.08 0.04"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0.05 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.12 0.08 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_wrist_joint" type="revolute">
+    <parent link="right_forearm"/>
+    <child link="right_hand"/>
+    <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-M_PI/4}" upper="${M_PI/4}" effort="5" velocity="${M_PI}"/>
+    <dynamics damping="0.2" friction="0.05"/>
+  </joint>
+
+  <!-- Left Leg -->
+  <link name="left_hip">
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <inertia ixx="0.008" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.003"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.07" length="0.1"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.07" length="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_hip_yaw_joint" type="revolute">
+    <parent link="pelvis"/>
+    <child link="left_hip"/>
+    <origin xyz="0 0.09 -0.1" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-M_PI/6}" upper="${M_PI/6}" effort="30" velocity="${M_PI}"/>
+    <dynamics damping="1.0" friction="0.2"/>
+  </joint>
+
+  <link name="left_thigh">
+    <inertial>
+      <mass value="${leg_mass}"/>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <inertia ixx="0.15" ixy="0" ixz="0" iyy="0.15" iyz="0" izz="0.02"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_hip_pitch_joint" type="revolute">
+    <parent link="left_hip"/>
+    <child link="left_thigh"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI/2}" effort="40" velocity="${M_PI}"/>
+    <dynamics damping="1.0" friction="0.2"/>
+  </joint>
+
+  <link name="left_shin">
+    <inertial>
+      <mass value="${leg_mass}"/>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <inertia ixx="0.12" ixy="0" ixz="0" iyy="0.12" iyz="0" izz="0.015"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_knee_joint" type="revolute">
+    <parent link="left_thigh"/>
+    <child link="left_shin"/>
+    <origin xyz="0 0 -0.4" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="0" effort="40" velocity="${M_PI}"/>
+    <dynamics damping="1.0" friction="0.2"/>
+  </joint>
+
+  <link name="left_ankle">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.002"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.1"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_ankle_pitch_joint" type="revolute">
+    <parent link="left_shin"/>
+    <child link="left_ankle"/>
+    <origin xyz="0 0 -0.4" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/4}" upper="${M_PI/4}" effort="20" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <link name="left_foot">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0.07 0 -0.02" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0.07 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.25 0.12 0.04"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0.07 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.25 0.12 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_ankle_roll_joint" type="revolute">
+    <parent link="left_ankle"/>
+    <child link="left_foot"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-M_PI/6}" upper="${M_PI/6}" effort="15" velocity="${M_PI}"/>
+    <dynamics damping="0.3" friction="0.05"/>
+  </joint>
+
+  <!-- Right Leg (mirror left leg) -->
+  <link name="right_hip">
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <inertia ixx="0.008" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.003"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.07" length="0.1"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.07" length="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_hip_yaw_joint" type="revolute">
+    <parent link="pelvis"/>
+    <child link="right_hip"/>
+    <origin xyz="0 -0.09 -0.1" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-M_PI/6}" upper="${M_PI/6}" effort="30" velocity="${M_PI}"/>
+    <dynamics damping="1.0" friction="0.2"/>
+  </joint>
+
+  <link name="right_thigh">
+    <inertial>
+      <mass value="${leg_mass}"/>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <inertia ixx="0.15" ixy="0" ixz="0" iyy="0.15" iyz="0" izz="0.02"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_hip_pitch_joint" type="revolute">
+    <parent link="right_hip"/>
+    <child link="right_thigh"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="${M_PI/2}" effort="40" velocity="${M_PI}"/>
+    <dynamics damping="1.0" friction="0.2"/>
+  </joint>
+
+  <link name="right_shin">
+    <inertial>
+      <mass value="${leg_mass}"/>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <inertia ixx="0.12" ixy="0" ixz="0" iyy="0.12" iyz="0" izz="0.015"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.2" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.06" length="0.4"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_knee_joint" type="revolute">
+    <parent link="right_thigh"/>
+    <child link="right_shin"/>
+    <origin xyz="0 0 -0.4" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/2}" upper="0" effort="40" velocity="${M_PI}"/>
+    <dynamics damping="1.0" friction="0.2"/>
+  </joint>
+
+  <link name="right_ankle">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.002"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.1"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_ankle_pitch_joint" type="revolute">
+    <parent link="right_shin"/>
+    <child link="right_ankle"/>
+    <origin xyz="0 0 -0.4" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-M_PI/4}" upper="${M_PI/4}" effort="20" velocity="${M_PI}"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <link name="right_foot">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0.07 0 -0.02" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
+    </inertial>
+    
+    <visual>
+      <origin xyz="0.07 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.25 0.12 0.04"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    
+    <collision>
+      <origin xyz="0.07 0 -0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.25 0.12 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_ankle_roll_joint" type="revolute">
+    <parent link="right_ankle"/>
+    <child link="right_foot"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-M_PI/6}" upper="${M_PI/6}" effort="15" velocity="${M_PI}"/>
+    <dynamics damping="0.3" friction="0.05"/>
+  </joint>
+
+  <!-- Gazebo plugins -->
+  <gazebo>
+    <plugin name="ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/humanoid_robot</robotNamespace>
+    </plugin>
+  </gazebo>
+
+  <!-- Add IMU sensor to head -->
+  <gazebo reference="head">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>false</visualize>
+      <imu>
+        <angular_velocity>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+            </noise>
+          </z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+            </noise>
+          </z>
+        </linear_acceleration>
+      </imu>
+      <plugin name="imu_controller" filename="libgazebo_ros_imu.so">
+        <topicName>imu/data</topicName>
+        <serviceName>imu/service</serviceName>
+        <gaussianNoise>0.0</gaussianNoise>
+        <updateRate>100.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Force/Torque sensors in feet -->
+  <gazebo reference="left_foot">
+    <sensor name="left_foot_ft_sensor" type="force_torque">
+      <always_on>true</always_on>
+      <update_rate>500</update_rate>
+      <force_torque>
+        <frame>child</frame>
+        <measure_direction>child_to_parent</measure_direction>
+      </force_torque>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="right_foot">
+    <sensor name="right_foot_ft_sensor" type="force_torque">
+      <always_on>true</always_on>
+      <update_rate>500</update_rate>
+      <force_torque>
+        <frame>child</frame>
+        <measure_direction>child_to_parent</measure_direction>
+      </force_torque>
+    </sensor>
+  </gazebo>
+
+  <!-- ROS2 Control interface -->
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    
+    <joint name="left_hip_yaw_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_hip_pitch_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_knee_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_ankle_pitch_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_ankle_roll_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_hip_yaw_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_hip_pitch_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_knee_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_ankle_pitch_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_ankle_roll_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_shoulder_yaw_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_shoulder_pitch_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_elbow_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="left_wrist_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_shoulder_yaw_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_shoulder_pitch_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_elbow_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="right_wrist_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    
+    <joint name="neck_joint">
+      <command_interface name="position"/>
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+</robot>

@@ -1,0 +1,291 @@
+---
+sidebar_label: Hardware Guide - Platforms and Options
+---
+
+# Complete Hardware Guide: Platforms, Requirements, and Recommendations
+
+## Hardware Overview for Physical AI & Humanoid Robotics
+
+Developing and deploying humanoid robot applications requires careful consideration of both development and deployment hardware. This guide covers the essential hardware components, recommended specifications, and cost-effective options for different use cases.
+
+## Computing Requirements
+
+### Development Station Requirements
+
+For serious humanoid robotics development, your compute requirements will be substantial due to the complexity of simulation, machine learning, and real-time control.
+
+#### Minimum Specifications
+- **CPU**: Intel i7-12700K / AMD Ryzen 7 5800X or equivalent
+- **GPU**: NVIDIA RTX 4070 (12GB VRAM) or equivalent
+- **RAM**: 32GB DDR4-3200 or faster
+- **Storage**: 1TB NVMe SSD
+- **OS**: Ubuntu 20.04/22.04 LTS or Windows 10/11
+
+#### Recommended Specifications
+- **CPU**: Intel i9-13900K / AMD Ryzen 9 7950X or equivalent
+- **GPU**: NVIDIA RTX 4090 (24GB VRAM) or RTX 6000 Ada Generation
+- **RAM**: 64GB DDR5-5200 or faster
+- **Storage**: 2TB+ NVMe SSD
+- **OS**: Ubuntu 22.04 LTS (recommended for robotics development)
+
+### Why These Specifications Matter
+
+Humanoid robotics simulation and development are extremely compute-intensive:
+
+1. **Physics Simulation**: Requires real-time physics calculations with complex contact dynamics
+2. **Realistic Rendering**: High-fidelity visual simulation for perception training
+3. **AI Training**: Running neural networks and reinforcement learning algorithms
+4. **Multi-Sensor Processing**: Processing camera, LIDAR, IMU, and other sensor data
+5. **Real-time Control**: Generating control commands at high frequencies
+
+### GPU Recommendations by Task
+
+| Task | Minimum GPU | Recommended GPU | Notes |
+|------|-------------|-----------------|-------|
+| Basic Simulation | RTX 3060 (12GB) | RTX 4070 (12GB) | For simple humanoid models |
+| Complex Simulation | RTX 4070 (12GB) | RTX 4080/4090 (16-24GB) | For detailed physics, multiple robots |
+| AI Training | RTX 4080 (16GB) | RTX 6000 Ada (48GB) | For training neural controllers |
+| Real-time Inference | RTX 4070 (12GB) | RTX 4090 (24GB) | For on-robot deployment simulation |
+
+## Jetson Platforms for Edge Robotics
+
+For deployment on actual humanoid robots, NVIDIA Jetson platforms provide excellent AI compute in compact, power-efficient packages.
+
+### Jetson Orin Series Comparison
+
+| Model | GPU | CPU | RAM | Power (W) | Target Use |
+|-------|-----|-----|-----|-----------|------------|
+| Jetson Orin Nano | 4096 CUDA | 8-core ARM | 4-8GB | 15-25 | Light perception, navigation |
+| Jetson Orin NX | 1024 CUDA | 8-core ARM | 8GB | 25-40 | Moderate AI workloads |
+| Jetson AGX Orin | 2048 CUDA | 12-core ARM | 32GB | 60-80 | Heavy AI inference, multiple models |
+
+### Jetson for Humanoid Applications
+
+The Jetson platform offers several advantages for humanoid robots:
+
+1. **Power Efficiency**: Crucial for battery-powered systems
+2. **AI Acceleration**: Dedicated tensor cores for neural network inference
+3. **Real-time Performance**: Real-time capabilities for control applications
+4. **Compact Form Factor**: Fits within humanoid robot bodies
+5. **ROS2 Support**: Full compatibility with Robot Operating System
+
+### Example Jetson Integration
+
+```python
+# Example: Jetson-based perception system for humanoid
+import jetson.inference
+import jetson.utils
+import cv2
+import numpy as np
+
+class JetsonPerceptionEngine:
+    def __init__(self):
+        # Load AI models optimized for Jetson
+        self.object_detection = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
+        self.depth_segmentation = jetson.inference.segNet("fcn-resnet18-cityscapes-1024x512")
+        
+        # Camera input
+        self.camera = jetson.utils.videoSource("csi://0")  # CSI camera
+        
+    def detect_humans_and_obstacles(self, image):
+        """
+        Detect humans and obstacles in robot's field of view
+        """
+        # Convert to CUDA memory
+        img = jetson.utils.cudaFromNumpy(image)
+        
+        # Run object detection
+        detections = self.object_detection.Detect(img)
+        
+        # Run segmentation
+        self.depth_segmentation.Process(img)
+        mask = jetson.utils.cudaToNumpy(img)
+        
+        # Process results for navigation planning
+        humans = []
+        obstacles = []
+        
+        for det in detections:
+            if det.ClassID == self.object_detection.GetClassDesc("person"):
+                humans.append(det)
+            else:
+                obstacles.append(det)
+                
+        return {
+            'humans': humans,
+            'obstacles': obstacles,
+            'segmentation_mask': mask
+        }
+```
+
+## Complete Hardware Ecosystem
+
+### Cloud vs On-Premise Considerations
+
+For humanoid robot development, you have two primary approaches:
+
+#### Cloud-Based Development
+**Pros:**
+- Access to high-end GPUs without local hardware investment
+- Scalable compute resources for training
+- Easy collaboration and sharing
+- No maintenance overhead
+
+**Cons:**
+- Internet connectivity required
+- Potential data privacy concerns
+- Recurring costs
+- Latency for real-time applications
+
+**Best for:** Training AI models, large-scale simulation, initial development
+
+#### On-Premise Development
+**Pros:**
+- No internet dependency
+- Better security for proprietary development
+- No recurring costs after initial investment
+- Lower latency for real-time control
+
+**Cons:**
+- Significant upfront investment
+- Maintenance and upgrades required
+- Space and cooling requirements
+- Limited scalability
+
+**Best for:** Real-time control, deployment validation, sensitive projects
+
+### Robot-Specific Hardware Components
+
+#### Actuators and Joints
+
+Humanoid robots require specialized actuators that can provide:
+
+1. **High Torque Density**: To support body weight during locomotion
+2. **Low Backlash**: For precise positioning
+3. **Bidirectional Control**: Ability to apply torque in both directions
+4. **Compliance**: Some compliance for safety and natural movement
+
+Popular actuator options:
+- **Dynamixel XL/XL430**: Good for small prototypes (torque: ~2.1 Nm)
+- **Herbison Servos**: Medium-sized applications (torque: ~20-50 Nm)
+- **Harmonic Drive Actuators**: High-end applications (torque: 100+ Nm)
+- **Series Elastic Actuators**: Advanced compliance (varies by design)
+
+#### Sensors
+
+Essential sensing for humanoid robots:
+- **IMU (Inertial Measurement Unit)**: For balance and orientation
+- **Force/Torque Sensors**: In feet for balance control
+- **Vision Sensors**: Cameras for perception
+- **LiDAR**: For environment mapping (optional but valuable)
+- **Joint Encoders**: For precise position feedback
+- **Current Sensors**: For force estimation
+
+#### Power Systems
+
+For mobile humanoid robots:
+- **Battery Type**: LiPo or LiFePO4 for high power density
+- **Voltage**: Typically 14.8V-52V depending on actuator requirements
+- **Capacity**: 10,000mAh+ for reasonable runtime
+- **Management**: Robust BMS (Battery Management System) required
+
+## Real Robot Options
+
+### Commercial Humanoid Platforms
+
+Several commercial platforms are available for research and development:
+
+#### Unitree Robotics
+- **H1**: Most affordable humanoid ($16,000-60,000)
+- **G1**: More advanced with better dexterity
+- **Advantages**: ROS support, good documentation, active community
+- **Disadvantages**: Limited payload capacity
+
+#### Boston Dynamics
+- **Atlas**: Most advanced (not available commercially)
+- **Spot**: Quadruped but good for locomotion research
+- **Advantages**: Best motion capabilities
+- **Disadvantages**: Limited availability, high cost
+
+#### Agility Robotics
+- **Digit**: Commercial biped robot
+- **Advantages**: Market-ready, industrial focus
+- **Disadvantages**: Expensive, limited customization
+
+### Build Your Own Approach
+
+For custom development, consider these options:
+
+#### Simulation-First Approach
+1. Develop and test in Isaac Sim
+2. Use hardware-in-the-loop for validation
+3. Gradually transition to real hardware
+
+#### Progressive Hardware Scaling
+1. Start with simplified models in simulation
+2. Use single leg or biped platform for validation
+3. Scale to full humanoid as capabilities mature
+
+## Cost Considerations
+
+### Budget Breakdown (Estimated)
+
+For a research-quality humanoid robot:
+
+| Component | Low End | Mid Range | High End |
+|-----------|---------|-----------|----------|
+| Actuators (20 joints) | $5,000 | $20,000 | $80,000 |
+| Computing (Jetson/PC) | $500 | $2,000 | $10,000 |
+| Sensors | $1,000 | $5,000 | $20,000 |
+| Structure/Mechanics | $2,000 | $10,000 | $40,000 |
+| Electronics | $500 | $2,000 | $5,000 |
+| **Total** | **$9,000** | **$39,000** | **$155,000** |
+
+### Cost Optimization Strategies
+
+1. **Start Small**: Begin with single-leg or biped prototypes
+2. **Use Simulation**: Maximize time in simulation before hardware purchase
+3. **Modular Design**: Build systems in modular components
+4. **Buy Used**: Research-grade equipment often available second-hand
+5. **Academic Discounts**: Leverage educational pricing for software/hardware
+6. **Collaboration**: Share costs with other researchers/teams
+
+## Recommended Starter Kit
+
+Based on the above considerations, here's our recommended starter configuration for beginners:
+
+### Development Setup
+- **Workstation**: RTX 4070Ti, i7-13700K, 32GB RAM (or equivalent AMD)
+- **Software**: Isaac Sim, ROS2 Humble, Isaac ROS packages
+- **Cloud Access**: Qdrant Cloud, Google Cloud (for AI APIs)
+
+### Simulation Focus (No Immediate Hardware)
+- Focus on developing skills in:
+  - Isaac Sim for physics simulation
+  - ROS2 for robotics programming
+  - Reinforcement learning for control
+  - Computer vision for perception
+  - Motion planning for navigation
+
+### Hardware Acquisition Strategy
+1. **Phase 1**: Start with simulation mastery
+2. **Phase 2**: Acquire small robotic platform (e.g., TurtleBot3, LoCoBot)
+3. **Phase 3**: Progress to more complex hardware as needed
+
+This approach allows you to develop sophisticated humanoid robotics skills while managing costs effectively. The simulation skills you develop will transfer directly to real hardware when you're ready to make the investment.
+
+## Troubleshooting Common Hardware Issues
+
+### GPU Memory Problems
+- **Issue**: Out of memory during simulation
+- **Solution**: Reduce physics complexity, lower rendering quality, or upgrade GPU
+
+### Real-time Performance
+- **Issue**: Simulation running slower than real-time
+- **Solution**: Reduce physics update rate, optimize collision meshes, add more RAM
+
+### Perception Pipeline Issues
+- **Issue**: Slow inference on Jetson
+- **Solution**: Optimize models for edge deployment, use TensorRT optimization
+
+The most important thing to remember is that humanoid robotics is an interdisciplinary field requiring expertise across multiple domains. Start with simulation to build foundational knowledge, then gradually incorporate hardware as your understanding deepens.

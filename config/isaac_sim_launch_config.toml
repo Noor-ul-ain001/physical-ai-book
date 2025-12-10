@@ -1,0 +1,135 @@
+# Isaac Sim Launch Configuration for Humanoid Robot Simulation
+
+# This configuration launches Isaac Sim with the humanoid robot model
+# and all necessary extensions for the Physical AI & Humanoid Robotics project
+
+[launch]
+# Isaac Sim application settings
+app_path = "isaac-sim"
+app_arguments = "--exec omni.isaac.examples.simple_robots.carter_fleet --summary /Users/user/Desktop/fn-bk/config/isaac_sim_config.ini"
+
+# Extensions to enable
+extensions = [
+    "omni.isaac.ros_bridge",
+    "omni.isaac.core_nodes",
+    "omni.isaac.range_sensor",
+    "omni.isaac.wheeled_robots",
+    "omni.isaac.vslam",
+    "omni.isaac.perception",
+    "omni.isaac.ml_archive",
+    "omni.isaac.quadruped",
+    "omni.isaac.sentis",
+    "omni.isaac.franka",
+    "omni.isaac.navigation",
+    "omni.isaac.ros2_bridge",
+    "omni.isaac.ros_bridge",
+    "omni.isaac.occupancy_map",
+    "omni.isaac.imu_sensor",
+    "omni.isaac.camera_sensor",
+    "ommi.isaac.lift",
+    "omni.isaac.labeller",
+    "omni.isaac.ros2_bicycle_control",
+    "omni.isaac.ros2_examples",
+    "omni.isaac.ros2_bridge_humble",
+    "omni.isaac.ros_bridge_humble",
+    "omni.isaac.ros2_bridge_native",
+    "omni.isaac.ros2_bridge_extensions",
+    "omni.isaac.ros2_nucleus",
+    "omni.isaac.ros2_bicycle_controller",
+    "omni.isaac.ros2_bridge_core",
+    "omni.isaac.ros2_perception_pipeline",
+    "omni.isaac.ros2_slam_pipeline",
+    "omni.isaac.ros2_navigation_pipeline",
+    "omni.isaac.ros2_control_pipeline",
+    "omni.isaac.ros2_humanoid_control"
+]
+
+# Humanoid-specific extensions (these would need to be developed)
+humanoid_extensions = [
+    "omni.isaac.humanoid_base",
+    "omni.isaac.humanoid_control",
+    "omni.isaac.humanoid_perception",
+    "omni.isaac.humanoid_locomotion",
+    "omni.isaac.humanoid_manipulation"
+]
+
+# Environment settings
+environment = {
+    "gravity": [0, 0, -9.81],
+    "time_step": 0.008333,  # 120 Hz
+    "substeps": 2,
+    "solver_iterations": 8
+}
+
+# Robot model path
+robot_model_path = "/Users/user/Desktop/fn-bk/robot_description/humanoid.urdf.xacro"
+
+# Simulation settings
+simulation = {
+    "real_time_update_rate": 60.0,  # Target 60 FPS
+    "max_step_size": 0.008333,      # 1/120s for 120Hz
+    "physics_engine": "physx",
+    "enable_gpu_dynamics": true,
+    "broadphase_type": "multicore",
+    "use_hot_reset": true
+}
+
+# Rendering settings
+rendering = {
+    "width": 1280,
+    "height": 720,
+    "fov": 60.0,  # degrees
+    "render_mode": "raytraced",
+    "max_lights": 8,
+    "max_objects": 10000
+}
+
+# Sensors to enable
+sensors = [
+    "camera",
+    "lidar",
+    "imu",
+    "force_torque",
+    "gps",
+    "contact_sensors"
+]
+
+# Physics settings for humanoid stability
+physics = {
+    "solver_type": "TGS",  # Use TGS solver for better stability
+    "position_iterations": 8,   # More iterations for humanoid stability
+    "velocity_iterations": 1,   # Fewer velocity iterations for efficiency
+    "max_depenetration_velocity": 100.0,  # Higher for faster recovery
+    "friction_correlation_distance": 0.001,  # Reduced for better grip
+    "simd_stage_size": 128,     # Optimized for humanoid simulation
+    "contact_offset": 0.001,    # Accurate contact detection
+    "rest_offset": 0.0001       # Minimal penetration for stable contacts
+}
+
+# Humanoid-specific constraints
+humanoid_constraints = {
+    "balance_threshold": 15.0,  # degrees from upright before correction needed
+    "step_height_max": 0.15,    # Maximum step height for walking
+    "step_length_max": 0.4,     # Maximum step length for walking
+    "com_height_target": 0.85,  # Target center of mass height in meters
+    "support_polygon_tolerance": 0.05  # Tolerance for balance maintenance
+}
+
+# Performance optimization settings
+performance = {
+    "max_threads": 8,
+    "use_gpu_particle_system": true,
+    "use_gpu_collision": true,
+    "batch_renderer": true,
+    "disable_render_when_possible": false  # Keep rendering for perception training
+}
+
+# Logging and debugging settings
+debug = {
+    "enable_profiler": true,
+    "enable_physics_debug": false,  # Enable only when needed (affects performance)
+    "enable_render_debug": false,   # Enable only when needed
+    "log_level": "info",
+    "save_logs": true,
+    "log_directory": "/Users/user/Desktop/fn-bk/logs/"
+}

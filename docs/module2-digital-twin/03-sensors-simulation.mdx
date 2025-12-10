@@ -1,0 +1,944 @@
+---
+sidebar_position: 3
+---
+
+# Sensors Simulation: Modeling Perception for Humanoid Robots
+
+## Introduction to Sensor Simulation
+
+Sensor simulation is a critical component of digital twin technology for humanoid robots. In simulation environments like Gazebo, accurately modeling sensors allows developers to test perception algorithms, control strategies, and robot behaviors before deploying to physical hardware. For humanoid robots, which require rich sensory feedback for balance, navigation, and interaction, proper sensor simulation is essential.
+
+### Key Sensor Categories for Humanoids
+
+Humanoid robots typically require several types of sensors:
+
+1. **Inertial Measurement Units (IMUs)**: For balance and orientation
+2. **Cameras**: For visual perception and navigation
+3. **Force/Torque Sensors**: For contact detection and manipulation
+4. **LiDAR**: For environment mapping and obstacle detection
+5. **Joint Encoders**: For proprioception and control
+6. **Tactile Sensors**: For fine manipulation (emerging technology)
+
+## Inertial Measurement Unit (IMU) Simulation
+
+IMUs are crucial for humanoid robots, providing information about orientation, angular velocity, and linear acceleration needed for balance control.
+
+### Basic IMU Configuration
+
+```xml
+<!-- Basic IMU configuration in URDF -->
+<gazebo reference="torso">
+  <sensor name="torso_imu" type="imu">
+    <always_on>true</always_on>
+    <update_rate>100</update_rate>
+    <visualize>false</visualize>
+    <imu>
+      <angular_velocity>
+        <x>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </noise>
+        </x>
+        <y>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </noise>
+        </y>
+        <z>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </noise>
+        </z>
+      </angular_velocity>
+      <linear_acceleration>
+        <x>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.01</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </noise>
+        </x>
+        <y>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.01</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </noise>
+        </y>
+        <z>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.01</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </noise>
+        </z>
+      </linear_acceleration>
+    </imu>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <ros>
+        <namespace>/humanoid</namespace>
+        <remapping>~/out:=imu/data</remapping>
+      </ros>
+      <frame_id>torso_imu_frame</frame_id>
+    </plugin>
+  </sensor>
+</gazebo>
+```
+
+### Multiple IMUs for Enhanced Perception
+
+For more sophisticated humanoid robots, multiple IMUs can be used:
+
+```xml
+<!-- IMU on head for orientation tracking -->
+<gazebo reference="head">
+  <sensor name="head_imu" type="imu">
+    <always_on>true</always_on>
+    <update_rate>200</update_rate>
+    <visualize>false</visualize>
+    <imu>
+      <angular_velocity>
+        <x><noise type="gaussian"><stddev>1e-3</stddev></noise></x>
+        <y><noise type="gaussian"><stddev>1e-3</stddev></noise></y>
+        <z><noise type="gaussian"><stddev>1e-3</stddev></noise></z>
+      </angular_velocity>
+      <linear_acceleration>
+        <x><noise type="gaussian"><stddev>1.7e-1</stddev></noise></x>
+        <y><noise type="gaussian"><stddev>1.7e-1</stddev></noise></y>
+        <z><noise type="gaussian"><stddev>1.7e-1</stddev></noise></z>
+      </linear_acceleration>
+    </imu>
+  </sensor>
+</gazebo>
+
+<!-- IMU on feet for contact detection -->
+<gazebo reference="left_foot">
+  <sensor name="left_foot_imu" type="imu">
+    <always_on>true</always_on>
+    <update_rate>500</update_rate>
+    <visualize>false</visualize>
+    <imu>
+      <angular_velocity><x><noise type="gaussian"><stddev>5e-4</stddev></noise></x></angular_velocity>
+      <linear_acceleration><z><noise type="gaussian"><stddev>5e-2</stddev></noise></z></linear_acceleration>
+    </imu>
+  </sensor>
+</gazebo>
+```
+
+## Camera Simulation
+
+Cameras are essential for visual perception in humanoid robots, enabling navigation, object recognition, and human-robot interaction.
+
+### RGB Camera Configuration
+
+```xml
+<!-- RGB camera on the head -->
+<gazebo reference="head">
+  <sensor name="head_camera" type="camera">
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <update_rate>30</update_rate>
+    <camera name="head_camera">
+      <horizontal_fov>1.3962634</horizontal_fov> <!-- 80 degrees -->
+      <image>
+        <width>640</width>
+        <height>480</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.1</near>
+        <far>100.0</far>
+      </clip>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.007</stddev>
+      </noise>
+    </camera>
+    <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+      <ros>
+        <namespace>/humanoid</namespace>
+        <remapping>image_raw:=camera/image_raw</remapping>
+        <remapping>camera_info:=camera/camera_info</remapping>
+      </ros>
+      <camera_name>head_camera</camera_name>
+      <frame_name>head_camera_optical_frame</frame_name>
+      <hack_baseline>0.07</hack_baseline>
+      <distortion_k1>0.0</distortion_k1>
+      <distortion_k2>0.0</distortion_k2>
+      <distortion_k3>0.0</distortion_k3>
+      <distortion_t1>0.0</distortion_t1>
+      <distortion_t2>0.0</distortion_t2>
+    </plugin>
+  </sensor>
+</gazebo>
+```
+
+### Depth Camera Configuration
+
+```xml
+<!-- Depth camera for 3D perception -->
+<gazebo reference="head">
+  <sensor name="head_depth_camera" type="depth">
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <update_rate>30</update_rate>
+    <camera name="head_depth_camera">
+      <horizontal_fov>1.04719755</horizontal_fov> <!-- 60 degrees -->
+      <image>
+        <width>640</width>
+        <height>480</height>
+        <format>L8</format>
+      </image>
+      <clip>
+        <near>0.1</near>
+        <far>10.0</far>
+      </clip>
+    </camera>
+    <plugin name="depth_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+      <ros>
+        <namespace>/humanoid</namespace>
+        <remapping>depth/image_raw:=camera/depth/image_raw</remapping>
+        <remapping>depth/camera_info:=camera/depth/camera_info</remapping>
+        <remapping>rgb/image_raw:=camera/rgb/image_raw</remapping>
+        <remapping>rgb/camera_info:=camera/rgb/camera_info</remapping>
+      </ros>
+      <camera_name>head_depth_camera</camera_name>
+      <frame_name>head_depth_camera_optical_frame</frame_name>
+      <baseline>0.2</baseline>
+      <distortion_k1>0.0</distortion_k1>
+      <distortion_k2>0.0</distortion_k2>
+      <distortion_k3>0.0</distortion_k3>
+      <distortion_t1>0.0</distortion_t1>
+      <distortion_t2>0.0</distortion_t2>
+    </plugin>
+  </sensor>
+</gazebo>
+```
+
+### Multiple Camera Setup
+
+```xml
+<!-- Stereo camera pair for depth perception -->
+<gazebo reference="head">
+  <!-- Left camera -->
+  <sensor name="stereo_left_camera" type="camera">
+    <pose>0 -0.05 0 0 0 0</pose> <!-- Offset from head center -->
+    <camera name="stereo_left">
+      <horizontal_fov>1.04719755</horizontal_fov>
+      <image><width>640</width><height>480</height><format>R8G8B8</format></image>
+      <clip><near>0.1</near><far>10.0</far></clip>
+    </camera>
+  </sensor>
+  
+  <!-- Right camera -->
+  <sensor name="stereo_right_camera" type="camera">
+    <pose>0 0.05 0 0 0 0</pose> <!-- Offset from head center -->
+    <camera name="stereo_right">
+      <horizontal_fov>1.04719755</horizontal_fov>
+      <image><width>640</width><height>480</height><format>R8G8B8</format></image>
+      <clip><near>0.1</near><far>10.0</far></clip>
+    </camera>
+  </sensor>
+</gazebo>
+```
+
+## Force/Torque Sensor Simulation
+
+Force/Torque sensors are crucial for humanoid robots to detect contact with the environment and for fine manipulation tasks.
+
+### Basic F/T Sensor Configuration
+
+```xml
+<!-- F/T sensor on the foot for balance control -->
+<gazebo reference="left_foot">
+  <sensor name="left_foot_ft_sensor" type="force_torque">
+    <always_on>true</always_on>
+    <update_rate>500</update_rate>
+    <force_torque>
+      <frame>child</frame>
+      <measure_direction>child_to_parent</measure_direction>
+      <force>
+        <noise type="gaussian">
+          <mean>0.0</mean>
+          <stddev>0.15</stddev>
+        </noise>
+      </force>
+      <torque>
+        <noise type="gaussian">
+          <mean>0.0</mean>
+          <stddev>0.05</stddev>
+        </noise>
+      </torque>
+    </force_torque>
+    <plugin name="left_foot_ft_plugin" filename="libgazebo_ros_ft_sensor.so">
+      <ros>
+        <namespace>/humanoid</namespace>
+        <remapping>~/wrench:=left_foot/ft_sensor</remapping>
+      </ros>
+      <frame_name>left_foot_ft_frame</frame_name>
+    </plugin>
+  </sensor>
+</gazebo>
+
+<!-- F/T sensor on the end effector for manipulation -->
+<gazebo reference="left_hand">
+  <sensor name="left_hand_ft_sensor" type="force_torque">
+    <always_on>true</always_on>
+    <update_rate>500</update_rate>
+    <force_torque>
+      <frame>child</frame>
+      <measure_direction>child_to_parent</measure_direction>
+      <force><noise type="gaussian"><stddev>0.1</stddev></noise></force>
+      <torque><noise type="gaussian"><stddev>0.03</stddev></noise></torque>
+    </force_torque>
+  </sensor>
+</gazebo>
+```
+
+## LiDAR Sensor Simulation
+
+LiDAR sensors provide crucial information for navigation and mapping in humanoid robots.
+
+### 2D LiDAR Configuration
+
+```xml
+<!-- 2D LiDAR on the torso -->
+<gazebo reference="torso">
+  <sensor name="torso_lidar_2d" type="ray">
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <update_rate>10</update_rate>
+    <ray>
+      <scan>
+        <horizontal>
+          <samples>720</samples>
+          <resolution>1</resolution>
+          <min_angle>-3.14159</min_angle>
+          <max_angle>3.14159</max_angle>
+        </horizontal>
+      </scan>
+      <range>
+        <min>0.1</min>
+        <max>30.0</max>
+        <resolution>0.01</resolution>
+      </range>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.01</stddev>
+      </noise>
+    </ray>
+    <plugin name="lidar_2d_controller" filename="libgazebo_ros_ray_sensor.so">
+      <ros>
+        <namespace>/humanoid</namespace>
+        <remapping>~/out:=scan</remapping>
+      </ros>
+      <output_type>sensor_msgs/LaserScan</output_type>
+      <frame_name>torso_lidar_2d_frame</frame_name>
+    </plugin>
+  </sensor>
+</gazebo>
+```
+
+### 3D LiDAR Configuration
+
+```xml
+<!-- 3D LiDAR for full environmental awareness -->
+<gazebo reference="head">
+  <sensor name="head_lidar_3d" type="ray">
+    <always_on>true</always_on>
+    <visualize>false</visualize>
+    <update_rate>10</update_rate>
+    <ray>
+      <scan>
+        <horizontal>
+          <samples>1024</samples>
+          <resolution>1</resolution>
+          <min_angle>-3.14159</min_angle>
+          <max_angle>3.14159</max_angle>
+        </horizontal>
+        <vertical>
+          <samples>64</samples>
+          <resolution>1</resolution>
+          <min_angle>-0.523599</min_angle> <!-- -30 degrees -->
+          <max_angle>0.349066</max_angle>   <!-- 20 degrees -->
+        </vertical>
+      </scan>
+      <range>
+        <min>0.1</min>
+        <max>100.0</max>
+        <resolution>0.01</resolution>
+      </range>
+    </ray>
+    <plugin name="lidar_3d_controller" filename="libgazebo_ros_velodyne_gpu_lidar.so">
+      <ros>
+        <namespace>/humanoid</namespace>
+        <remapping>~/out:=points</remapping>
+      </ros>
+      <frame_name>head_lidar_3d_frame</frame_name>
+      <min_range>0.1</min_range>
+      <max_range>100.0</max_range>
+      <gaussian_noise>0.01</gaussian_noise>
+    </plugin>
+  </sensor>
+</gazebo>
+```
+
+## Joint State and Encoders
+
+Joint encoders provide proprioceptive information about the robot's configuration.
+
+### Joint State Publisher Configuration
+
+```xml
+<!-- This is typically handled by ROS2 control, but here's how to add a joint state sensor -->
+<gazebo>
+  <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+    <ros>
+      <namespace>/humanoid</namespace>
+      <remapping>~/out:=joint_states</remapping>
+    </ros>
+    <update_rate>50</update_rate>
+    <joint_name>left_hip_joint</joint_name>
+    <joint_name>left_knee_joint</joint_name>
+    <joint_name>left_ankle_joint</joint_name>
+    <joint_name>right_hip_joint</joint_name>
+    <joint_name>right_knee_joint</joint_name>
+    <joint_name>right_ankle_joint</joint_name>
+    <!-- Add all other joints as needed -->
+    <publish_rate>50</publish_rate>
+  </plugin>
+</gazebo>
+```
+
+## Advanced Sensor Configurations
+
+### Multi-Modal Perception
+
+For complex humanoid robots, combining multiple sensor types is essential:
+
+```xml
+<!-- Configuring sensors for a comprehensive perception system -->
+<gazebo reference="head">
+  <!-- RGB camera -->
+  <sensor name="head_rgb_camera" type="camera">
+    <always_on>true</always_on>
+    <update_rate>30</update_rate>
+    <camera name="rgb">
+      <horizontal_fov>1.04719755</horizontal_fov>
+      <image><width>1280</width><height>720</height><format>R8G8B8</format></image>
+      <clip><near>0.1</near><far>100</far></clip>
+    </camera>
+  </sensor>
+  
+  <!-- Depth camera -->
+  <sensor name="head_depth_camera" type="depth">
+    <always_on>true</always_on>
+    <update_rate>30</update_rate>
+    <camera name="depth">
+      <horizontal_fov>1.04719755</horizontal_fov>
+      <image><width>640</width><height>480</height></image>
+      <clip><near>0.1</near><far>10</far></clip>
+    </camera>
+  </sensor>
+  
+  <!-- IMU -->
+  <sensor name="head_imu" type="imu">
+    <always_on>true</always_on>
+    <update_rate>200</update_rate>
+  </sensor>
+</gazebo>
+```
+
+### Sensor Fusion Simulation
+
+```xml
+<!-- Simulated sensor fusion node that processes multiple sensor inputs -->
+<node pkg="robot_localization" exec="ekf_node" name="ekf_se_odom">
+  <param name="frequency" value="50"/>
+  <param name="sensor_timeout" value="0.1"/>
+  <param name="two_d_mode" value="false"/>
+  <param name="map_frame" value="map"/>
+  <param name="odom_frame" value="odom"/>
+  <param name="base_link_frame" value="base_link"/>
+  <param name="world_frame" value="odom"/>
+  <param name="predict_to_current_time" value="true"/>
+  <param name="publish_tf" value="true"/>
+  
+  <!-- IMU orientation -->
+  <param name="imu0" value="/humanoid/imu/data"/>
+  <param name="imu0_config">false false false false false false true true true</param>
+  <param name="imu0_differential" value="false"/>
+  <param name="imu0_relative" value="true"/>
+  
+  <!-- Joint states for odometry -->
+  <param name="odom0" value="/humanoid/joint_states"/>
+  <param name="odom0_config">true true true false false false false false false</param>
+  <param name="odom0_differential" value="false"/>
+</node>
+```
+
+## Sensor Noise Modeling
+
+Realistic sensor noise is crucial for developing robust perception algorithms:
+
+### IMU Noise Modeling
+
+```xml
+<!-- Realistic IMU noise model -->
+<imu>
+  <angular_velocity>
+    <x>
+      <noise type="gaussian">
+        <mean>0.0</mean>
+        <stddev>1.047197551e-3</stddev> <!-- 0.06 deg/s -->
+        <bias_mean>0.0</bias_mean>
+        <bias_stddev>1.745329252e-4</bias_stddev> <!-- 0.01 deg/s -->
+        <dynamic_bias_stddev>1.745329252e-5</dynamic_bias_stddev>
+        <dynamic_bias_correlation_time>100.0</dynamic_bias_correlation_time>
+      </noise>
+    </x>
+    <y>
+      <noise type="gaussian">
+        <mean>0.0</mean>
+        <stddev>1.047197551e-3</stddev>
+        <bias_mean>0.0</bias_mean>
+        <bias_stddev>1.745329252e-4</bias_stddev>
+        <dynamic_bias_stddev>1.745329252e-5</dynamic_bias_stddev>
+        <dynamic_bias_correlation_time>100.0</dynamic_bias_correlation_time>
+      </noise>
+    </y>
+    <z>
+      <noise type="gaussian">
+        <mean>0.0</mean>
+        <stddev>1.047197551e-3</stddev>
+        <bias_mean>0.0</bias_mean>
+        <bias_stddev>1.745329252e-4</bias_stddev>
+        <dynamic_bias_stddev>1.745329252e-5</dynamic_bias_stddev>
+        <dynamic_bias_correlation_time>100.0</dynamic_bias_correlation_time>
+      </noise>
+    </z>
+  </angular_velocity>
+  <linear_acceleration>
+    <x>
+      <noise type="gaussian">
+        <mean>0.0</mean>
+        <stddev>0.017</stddev> <!-- 1.7 mg -->
+        <bias_mean>0.0</bias_mean>
+        <bias_stddev>0.0098</bias_stddev> <!-- 1 mg -->
+        <dynamic_bias_stddev>1.96e-5</dynamic_bias_stddev>
+        <dynamic_bias_correlation_time>300.0</dynamic_bias_correlation_time>
+      </noise>
+    </x>
+    <y>
+      <noise type="gaussian">
+        <mean>0.0</mean>
+        <stddev>0.017</stddev>
+        <bias_mean>0.0</bias_mean>
+        <bias_stddev>0.0098</bias_stddev>
+        <dynamic_bias_stddev>1.96e-5</dynamic_bias_stddev>
+        <dynamic_bias_correlation_time>300.0</dynamic_bias_correlation_time>
+      </noise>
+    </y>
+    <z>
+      <noise type="gaussian">
+        <mean>0.0</mean>
+        <stddev>0.017</stddev>
+        <bias_mean>0.0</bias_mean>
+        <bias_stddev>0.0098</bias_stddev>
+        <dynamic_bias_stddev>1.96e-5</dynamic_bias_stddev>
+        <dynamic_bias_correlation_time>300.0</dynamic_bias_correlation_time>
+      </noise>
+    </z>
+  </linear_acceleration>
+</imu>
+```
+
+### Camera Noise Modeling
+
+```xml
+<!-- Camera with realistic noise -->
+<camera name="realistic_camera">
+  <image>
+    <width>640</width>
+    <height>480</height>
+    <format>R8G8B8</format>
+  </image>
+  <noise>
+    <type>gaussian</type>
+    <mean>0.0</mean>
+    <stddev>0.007</stddev>  <!-- 0.7% of pixel value -->
+  </noise>
+  <distortion>
+    <k1>-0.25552997852039</k1>
+    <k2>0.08183454196452</k2>
+    <k3>-0.00066761877343</k3>
+    <p1>0.00016199306037</p1>
+    <p2>-0.00034927463303</p2>
+    <center>0.5 0.5</center>
+  </distortion>
+</camera>
+```
+
+## Implementing Sensor Processing in ROS2
+
+### Python Sensor Processing Node
+
+```python
+#!/usr/bin/env python3
+# sensor_processor.py
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import Imu, Image, LaserScan, JointState, WrenchStamped
+from cv_bridge import CvBridge
+import numpy as np
+import cv2
+
+class SensorProcessor(Node):
+    def __init__(self):
+        super().__init__('sensor_processor')
+        
+        # Initialize CV bridge for image processing
+        self.cv_bridge = CvBridge()
+        
+        # Create subscribers for different sensor types
+        self.imu_sub = self.create_subscription(
+            Imu, '/humanoid/imu/data', self.imu_callback, 10)
+        
+        self.camera_sub = self.create_subscription(
+            Image, '/humanoid/camera/image_raw', self.camera_callback, 10)
+        
+        self.scan_sub = self.create_subscription(
+            LaserScan, '/humanoid/scan', self.scan_callback, 10)
+        
+        self.joint_state_sub = self.create_subscription(
+            JointState, '/humanoid/joint_states', self.joint_state_callback, 10)
+        
+        self.ft_sensor_sub = self.create_subscription(
+            WrenchStamped, '/humanoid/left_foot/ft_sensor', self.ft_sensor_callback, 10)
+        
+        # Processed data storage
+        self.latest_imu_data = None
+        self.latest_joint_states = None
+        self.contact_state = {'left_foot': False, 'right_foot': False}
+        
+        self.get_logger().info('Sensor processor initialized')
+
+    def imu_callback(self, msg):
+        """Process IMU data for balance and orientation"""
+        # Extract orientation (in quaternion form)
+        quat = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
+        
+        # Extract angular velocity and linear acceleration
+        angular_vel = [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
+        linear_acc = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
+        
+        # Process for balance control
+        self.process_balance_control(quat, angular_vel, linear_acc)
+        
+        # Store for other processes
+        self.latest_imu_data = {
+            'orientation': quat,
+            'angular_velocity': angular_vel,
+            'linear_acceleration': linear_acc,
+            'timestamp': msg.header.stamp
+        }
+
+    def camera_callback(self, msg):
+        """Process camera data for visual perception"""
+        try:
+            # Convert ROS Image to OpenCV
+            cv_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
+            
+            # Apply image processing
+            processed_image = self.process_camera_image(cv_image)
+            
+            # Detect obstacles or features
+            features = self.detect_features(processed_image)
+            
+            # Store or publish results
+            self.publish_vision_results(features)
+            
+        except Exception as e:
+            self.get_logger().error(f'Camera processing error: {e}')
+
+    def scan_callback(self, msg):
+        """Process LiDAR data for navigation"""
+        # Extract ranges
+        ranges = np.array(msg.ranges)
+        
+        # Filter out invalid measurements
+        valid_ranges = ranges[(ranges >= msg.range_min) & (ranges <= msg.range_max)]
+        
+        # Detect obstacles
+        obstacle_distances = self.detect_obstacles(valid_ranges, msg.angle_min, msg.angle_increment)
+        
+        # Process for navigation
+        self.process_navigation(obstacle_distances)
+
+    def joint_state_callback(self, msg):
+        """Process joint states for proprioception"""
+        joint_positions = {}
+        joint_velocities = {}
+        joint_efforts = {}
+        
+        for i, name in enumerate(msg.name):
+            if i < len(msg.position):
+                joint_positions[name] = msg.position[i]
+            if i < len(msg.velocity):
+                joint_velocities[name] = msg.velocity[i]
+            if i < len(msg.effort):
+                joint_efforts[name] = msg.effort[i]
+        
+        # Store for other processes
+        self.latest_joint_states = {
+            'positions': joint_positions,
+            'velocities': joint_velocities,
+            'efforts': joint_efforts,
+            'timestamp': msg.header.stamp
+        }
+        
+        # Process for control
+        self.process_joint_feedback(joint_positions, joint_velocities, joint_efforts)
+
+    def ft_sensor_callback(self, msg):
+        """Process Force/Torque sensor for contact detection"""
+        # Extract force and torque values
+        force = [msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z]
+        torque = [msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z]
+        
+        # Determine contact state
+        contact_threshold = 5.0  # Newtons
+        contact_detected = abs(force[2]) > contact_threshold  # Z-axis is typically vertical
+        
+        # Update contact state
+        self.contact_state['left_foot'] = contact_detected
+        
+        # Process for balance control
+        self.process_contact_feedback('left_foot', contact_detected, force, torque)
+
+    def process_balance_control(self, orientation, angular_vel, linear_acc):
+        """Implement balance control algorithm using IMU data"""
+        # Convert quaternion to roll/pitch/yaw for balance control
+        rpy = self.quaternion_to_rpy(orientation)
+        
+        # Simple balance control logic
+        roll, pitch, yaw = rpy
+        
+        # Check if robot is tilting too much
+        tilt_threshold = 0.1  # radians
+        if abs(roll) > tilt_threshold or abs(pitch) > tilt_threshold:
+            self.get_logger().warn(f'Balance threshold exceeded: roll={roll:.3f}, pitch={pitch:.3f}')
+        
+        # Additional balance control logic would go here
+        pass
+
+    def quaternion_to_rpy(self, quat):
+        """Convert quaternion to roll-pitch-yaw"""
+        import math
+        
+        x, y, z, w = quat
+        
+        # Roll (x-axis rotation)
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        roll = math.atan2(sinr_cosp, cosr_cosp)
+        
+        # Pitch (y-axis rotation)
+        sinp = 2 * (w * y - z * x)
+        if abs(sinp) >= 1:
+            pitch = math.copysign(math.pi / 2, sinp)  # Use 90 degrees if out of range
+        else:
+            pitch = math.asin(sinp)
+        
+        # Yaw (z-axis rotation)
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = math.atan2(siny_cosp, cosy_cosp)
+        
+        return roll, pitch, yaw
+
+    def process_joint_feedback(self, positions, velocities, efforts):
+        """Process joint feedback for control"""
+        # Check for joint limits
+        for joint_name, position in positions.items():
+            # Example: Check if joint is near limits
+            if joint_name.endswith('hip_joint') and (position < -1.5 or position > 1.5):
+                self.get_logger().warn(f'{joint_name} near position limit: {position:.3f}')
+        
+        # Check for unexpected high efforts (indicating contact or hardware issue)
+        for joint_name, effort in efforts.items():
+            if abs(effort) > 40:  # Assuming 40 Nm is high for this robot
+                self.get_logger().info(f'High effort on {joint_name}: {effort:.3f} Nm')
+
+    def process_contact_feedback(self, foot_name, contact_detected, force, torque):
+        """Process contact feedback for walking control"""
+        if contact_detected:
+            # Calculate ZMP (Zero Moment Point) for balance control
+            fz = force[2]  # Normal force
+            mx = torque[1]  # Moment around y-axis
+            my = -torque[0] # Moment around x-axis (sign adjustment)
+            
+            if fz > 0.1:  # Only calculate if there's significant normal force
+                zmp_x = -my / fz
+                zmp_y = -mx / fz
+                
+                self.get_logger().debug(f'ZMP on {foot_name}: ({zmp_x:.3f}, {zmp_y:.3f})')
+                
+                # Check if ZMP is within foot boundaries
+                foot_length = 0.15  # meters
+                foot_width = 0.1   # meters
+                
+                if abs(zmp_x) > foot_length/2 or abs(zmp_y) > foot_width/2:
+                    self.get_logger().warn(f'ZMP outside foot boundaries on {foot_name}')
+        else:
+            self.get_logger().debug(f'No contact detected on {foot_name}')
+
+def main():
+    rclpy.init()
+    processor = SensorProcessor()
+    
+    try:
+        rclpy.spin(processor)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        processor.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+## Sensor Calibration and Validation
+
+### Simulated Calibration Process
+
+```xml
+<!-- Simulated calibration parameters -->
+<gazebo reference="head_camera">
+  <sensor name="head_camera" type="camera">
+    <!-- Include calibration data -->
+    <camera>
+      <!-- Standard calibration parameters -->
+      <distortion>
+        <k1>-0.25552997852039</k1>
+        <k2>0.08183454196452</k2>
+        <k3>-0.00066761877343</k3>
+        <p1>0.00016199306037</p1>
+        <p2>-0.00034927463303</p2>
+      </distortion>
+    </camera>
+  </sensor>
+</gazebo>
+```
+
+### Validation Techniques
+
+To validate sensor simulations:
+
+1. **Compare with Real Robot Data**: If available, validate simulation against real robot sensor readings
+2. **Visual Inspection**: Use GUI tools to visualize sensor data
+3. **Statistical Analysis**: Check noise characteristics match expected values
+4. **Algorithm Testing**: Ensure perception algorithms work similarly in sim and real
+
+## Performance Considerations
+
+### Sensor Update Rates
+
+```xml
+<!-- Optimize update rates based on sensor needs -->
+<gazebo reference="torso_imu">
+  <sensor name="torso_imu" type="imu">
+    <always_on>true</always_on>
+    <update_rate>100</update_rate> <!-- Balance control needs high rate -->
+  </sensor>
+</gazebo>
+
+<gazebo reference="head_camera">
+  <sensor name="head_camera" type="camera">
+    <always_on>true</always_on>
+    <update_rate>30</update_rate>  <!-- Vision processing is computationally expensive -->
+  </sensor>
+</gazebo>
+
+<gazebo reference="torso_lidar_2d">
+  <sensor name="torso_lidar_2d" type="ray">
+    <always_on>true</always_on>
+    <update_rate>10</update_rate>  <!-- LiDAR can run at lower rate for navigation -->
+  </sensor>
+</gazebo>
+```
+
+### Computational Optimization
+
+For humanoid robots with many sensors, consider:
+
+1. **Selective Processing**: Only process sensor data when needed
+2. **Multi-threading**: Process different sensor types in separate threads
+3. **Data Filtering**: Reduce data rates where possible without losing critical information
+4. **Efficient Algorithms**: Use optimized algorithms for real-time processing
+
+## Troubleshooting Common Issues
+
+### Sensor Data Problems
+
+Common issues and solutions:
+
+1. **No sensor data**: Check sensor plugins and namespaces
+2. **High latency**: Optimize update rates and processing algorithms
+3. **Incorrect data range**: Verify sensor configuration parameters
+4. **Synchronization issues**: Use message filters for multi-sensor fusion
+
+### Validation Example
+
+```python
+# Validate sensor data ranges and types
+def validate_sensor_data(self, msg):
+    """Validate sensor data before processing"""
+    
+    # IMU validation
+    if isinstance(msg, Imu):
+        # Check quaternion normalization
+        norm = msg.orientation.x**2 + msg.orientation.y**2 + msg.orientation.z**2 + msg.orientation.w**2
+        if abs(norm - 1.0) > 0.01:
+            self.get_logger().warn(f'IMU quaternion not normalized: {norm}')
+        
+        # Check reasonable ranges
+        if abs(msg.linear_acceleration.z) > 20:  # Should be ~9.8 for static
+            self.get_logger().warn(f'IMU acceleration exceeds reasonable range: {msg.linear_acceleration.z}')
+    
+    # Joint state validation
+    elif isinstance(msg, JointState):
+        for i, pos in enumerate(msg.position):
+            if not (-10 < pos < 10):  # Reasonable joint limit
+                self.get_logger().warn(f'Joint {msg.name[i]} position out of range: {pos}')
+```
+
+## Best Practices
+
+1. **Noise Modeling**: Always include realistic noise models in simulation
+2. **Frame Conventions**: Use consistent frame conventions (optical frames, etc.)
+3. **Update Rates**: Choose appropriate update rates for each sensor type
+4. **Validation**: Regularly validate simulation output against real hardware when available
+5. **Modularity**: Design sensor configurations to be modular and reusable
+6. **Documentation**: Document sensor specifications and configurations clearly
+
+## Next Steps
+
+With a comprehensive understanding of sensor simulation for humanoid robots, the next chapter will focus on Unity visualization, where we'll explore how to connect your Gazebo simulation to Unity for enhanced visualization and human-in-the-loop testing.
+
+Use the personalization button to adjust content complexity based on your experience level, or use the translation button to read this in Urdu.
