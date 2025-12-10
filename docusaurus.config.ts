@@ -26,6 +26,16 @@ const config = {
   i18n: {
     defaultLocale: 'en',
     locales: ['en', 'ur'], // English and Urdu
+    localeConfigs: {
+      en: {
+        label: 'English',
+        direction: 'ltr',
+      },
+      ur: {
+        label: 'اردو',
+        direction: 'rtl',
+      },
+    },
   },
 
   presets: [
@@ -55,10 +65,10 @@ const config = {
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
         title: 'Physical AI & Humanoid Robotics',
-        logo: {
-          alt: 'Physical AI Logo',
-          src: 'img/logo.svg',
-        },
+        // logo: {
+        //   alt: 'Physical AI Logo',
+        //   src: 'img/logo.svg',
+        // },
         items: [
           {
             type: 'docSidebar',
@@ -85,19 +95,19 @@ const config = {
             items: [
               {
                 label: 'Introduction & Foundations',
-                to: '/docs/intro/00-welcome',
+                to: '/docs/intro/welcome',
               },
               {
                 label: 'ROS2 Control',
-                to: '/docs/module1-ros2/01-overview',
+                to: '/docs/module1-ros2/overview',
               },
               {
                 label: 'Digital Twins & Simulation',
-                to: '/docs/module2-digital-twin/01-isac-sim-basics',
+                to: '/docs/module2-digital-twin/gazebo-basics',
               },
               {
                 label: 'Isaac Sim & vSLAM',
-                to: '/docs/module3-isaac/01-isaac-sim-basics',
+                to: '/docs/module3-isaac/isaac-sim',
               },
             ],
           },
@@ -144,7 +154,7 @@ const config = {
       {
         redirects: [
           {
-            to: '/docs/intro/00-welcome', // /docs/Intro leads to /docs/intro
+            to: '/docs/intro/welcome', // /docs/Intro leads to /docs/intro
             from: ['/docs/Intro', '/docs/welcome'],
           },
         ],

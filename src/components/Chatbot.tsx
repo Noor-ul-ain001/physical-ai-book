@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const ChatBot = () => {
-  // Don't render during SSR
   if (!ExecutionEnvironment.canUseDOM) {
     return null;
   }
@@ -15,17 +14,14 @@ const ChatBot = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Get current location path
   const location = typeof window !== 'undefined' ? window.location : { pathname: '/' };
 
-  // Detect color mode from document
   useEffect(() => {
     if (typeof document !== 'undefined') {
       const htmlElement = document.documentElement;
       const mode = htmlElement.getAttribute('data-theme') || 'light';
       setColorMode(mode);
 
-      // Watch for theme changes
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.attributeName === 'data-theme') {
@@ -44,7 +40,6 @@ const ChatBot = () => {
     }
   }, []);
 
-  // Scroll to bottom of messages
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -55,7 +50,6 @@ const ChatBot = () => {
     }
   };
 
-  // Handle Enter key press
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -63,7 +57,6 @@ const ChatBot = () => {
     }
   };
 
-  // Send message to backend
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -79,10 +72,8 @@ const ChatBot = () => {
     setIsLoading(true);
 
     try {
-      // Get context about current page
       const currentPageContext = `The user is currently viewing: ${location.pathname}. `;
 
-      // Call the actual backend API
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -130,37 +121,21 @@ const ChatBot = () => {
     }
   };
 
-  // Get user context if available
-  const getUserContext = () => {
-    // Try to get user profile from localStorage or context
-    try {
-      const profile = localStorage.getItem('humanoidProfile');
-      return profile ? JSON.parse(profile) : null;
-    } catch {
-      return null;
-    }
-  };
-
-  // Toggle chat window
   const toggleChat = () => {
     setIsOpen(!isOpen);
     if (!isOpen && inputRef.current) {
       setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
+        inputRef.current?.focus();
       }, 100);
     }
   };
 
-  // Close chat
   const closeChat = () => {
     setIsOpen(false);
   };
 
   return (
     <>
-      {/* Chat Icon Button */}
       {!isOpen && (
         <button
           onClick={toggleChat}
@@ -172,8 +147,8 @@ const ChatBot = () => {
             width: '60px',
             height: '60px',
             borderRadius: '50%',
-            backgroundColor: '#76b900',
-            color: 'white',
+            background: colorMode === 'dark' ? '#141E30' : '#F5F7FF',
+            color: colorMode === 'dark' ? '#F5F7FF' : '#141E30',
             border: 'none',
             fontSize: '24px',
             cursor: 'pointer',
@@ -190,7 +165,6 @@ const ChatBot = () => {
         </button>
       )}
 
-      {/* Chat Window */}
       {isOpen && (
         <div
           className={`chatbot-window ${colorMode}`}
@@ -200,8 +174,8 @@ const ChatBot = () => {
             right: '20px',
             width: '400px',
             height: '600px',
-            backgroundColor: colorMode === 'dark' ? '#2d2d2d' : '#ffffff',
-            border: `1px solid ${colorMode === 'dark' ? '#4a4a4a' : '#ddd'}`,
+            backgroundColor: colorMode === 'dark' ? '#141E30' : '#F5F7FF',
+            border: `1px solid ${colorMode === 'dark' ? '#0d1524' : '#d4d8f0'}`,
             borderRadius: '8px',
             display: 'flex',
             flexDirection: 'column',
@@ -212,8 +186,8 @@ const ChatBot = () => {
           {/* Header */}
           <div
             style={{
-              backgroundColor: '#76b900',
-              color: 'white',
+              background: colorMode === 'dark' ? '#141E30' : '#F5F7FF',
+              color: colorMode === 'dark' ? '#F5F7FF' : '#141E30',
               padding: '12px 16px',
               borderTopLeftRadius: '8px',
               borderTopRightRadius: '8px',
@@ -227,29 +201,26 @@ const ChatBot = () => {
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
-                onClick={() => {
-                  setMessages([]);
-                }}
+                onClick={() => setMessages([])}
                 style={{
-                  background: 'rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.1)',
                   border: 'none',
                   borderRadius: '4px',
-                  color: 'white',
+                  color: colorMode === 'dark' ? '#F5F7FF' : '#141E30',
                   cursor: 'pointer',
                   padding: '2px 6px',
                   fontSize: '12px'
                 }}
-                title="Clear chat"
               >
                 Clear
               </button>
               <button
                 onClick={closeChat}
                 style={{
-                  background: 'rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.1)',
                   border: 'none',
                   borderRadius: '50%',
-                  color: 'white',
+                  color: colorMode === 'dark' ? '#F5F7FF' : '#141E30',
                   cursor: 'pointer',
                   width: '24px',
                   height: '24px',
@@ -261,7 +232,7 @@ const ChatBot = () => {
             </div>
           </div>
 
-          {/* Messages Area */}
+          {/* Messages */}
           <div
             style={{
               flex: 1,
@@ -270,14 +241,14 @@ const ChatBot = () => {
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
-              backgroundColor: colorMode === 'dark' ? '#1e1e1e' : '#fafafa'
+              backgroundColor: colorMode === 'dark' ? '#141E30' : '#F5F7FF'
             }}
           >
             {messages.length === 0 ? (
               <div
                 style={{
                   textAlign: 'center',
-                  color: colorMode === 'dark' ? '#aaa' : '#666',
+                  color: colorMode === 'dark' ? '#aab7d1' : '#444',
                   fontStyle: 'italic',
                   marginTop: 'auto',
                   marginBottom: 'auto',
@@ -286,15 +257,13 @@ const ChatBot = () => {
               >
                 <h3>Hello! I'm your Physical AI & Humanoid Robotics assistant.</h3>
                 <p>Ask me about:</p>
-                <ul style={{ textAlign: 'left', listStyle: 'disc', marginLeft: '20px', marginTop: '10px' }}>
-                  <li>ROS2 fundamentals and implementation</li>
-                  <li>Digital twin concepts and simulation</li>
-                  <li>Isaac Sim and vSLAM techniques</li>
-                  <li>Reinforcement learning for humanoid control</li>
-                  <li>Vision-language-action models</li>
-                  <li>Any content from the textbook chapters</li>
+                <ul style={{ textAlign: 'left', marginLeft: '20px' }}>
+                  <li>ROS2 fundamentals</li>
+                  <li>Digital twins</li>
+                  <li>Isaac Sim</li>
+                  <li>Reinforcement learning</li>
+                  <li>VLA models</li>
                 </ul>
-                <p style={{ marginTop: '15px' }}>I have access to the full textbook content and can provide personalized answers based on your expertise level.</p>
               </div>
             ) : (
               messages.map((message) => (
@@ -311,31 +280,23 @@ const ChatBot = () => {
                       maxWidth: '85%',
                       padding: '10px 14px',
                       borderRadius: '18px',
-                      backgroundColor: message.sender === 'user'
-                        ? (colorMode === 'dark' ? '#4a4a4a' : '#e3f2fd')
-                        : (colorMode === 'dark' ? '#3a3a3a' : '#ffffff'),
-                      border: `1px solid ${colorMode === 'dark' ? '#555' : '#ddd'}`,
-                      wordWrap: 'break-word',
+                      backgroundColor:
+                        message.sender === 'user'
+                          ? (colorMode === 'dark' ? '#1f2942' : '#dce3ff')
+                          : (colorMode === 'dark' ? '#141E30' : '#ffffff'),
+                      border: `1px solid ${colorMode === 'dark' ? '#1b263b' : '#d4d8f0'}`,
+                      color: colorMode === 'dark' ? '#F5F7FF' : '#000',
                       wordBreak: 'break-word'
                     }}
                   >
-                    <div
-                      style={{
-                        marginBottom: message.sources && message.sources.length > 0 ? '8px' : '0'
-                      }}
-                    >
-                      {message.text}
-                    </div>
+                    <div>{message.text}</div>
 
                     {message.sources && message.sources.length > 0 && (
-                      <div style={{
-                        fontSize: '0.8em',
-                        marginTop: '5px',
-                        paddingTop: '5px',
-                        borderTop: `1px solid ${colorMode === 'dark' ? '#555' : '#eee'}`
-                      }}>
-                        <strong style={{ color: '#76b900' }}>Sources:</strong>
-                        <ul style={{ margin: '5px 0 0 0', paddingLeft: '15px' }}>
+                      <div style={{ fontSize: '0.8em', marginTop: '6px' }}>
+                        <strong style={{ color: colorMode === 'dark' ? '#F5F7FF' : '#141E30' }}>
+                          Sources:
+                        </strong>
+                        <ul style={{ paddingLeft: '15px' }}>
                           {message.sources.slice(0, 2).map((source, idx) => (
                             <li key={idx}>
                               <a
@@ -343,20 +304,14 @@ const ChatBot = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{
-                                  color: '#76b900',
-                                  textDecoration: 'none',
-                                  fontSize: '0.9em'
+                                  color: colorMode === 'dark' ? '#F5F7FF' : '#141E30',
+                                  textDecoration: 'underline'
                                 }}
                               >
                                 {source.title || 'Related content'}
                               </a>
                             </li>
                           ))}
-                          {message.sources.length > 2 && (
-                            <li style={{ color: '#76b900', fontSize: '0.8em' }}>
-                              ... and {message.sources.length - 2} more
-                            </li>
-                          )}
                         </ul>
                       </div>
                     )}
@@ -366,29 +321,31 @@ const ChatBot = () => {
             )}
 
             {isLoading && (
-              <div style={{ display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <div
                   style={{
                     maxWidth: '85%',
                     padding: '10px 14px',
                     borderRadius: '18px',
-                    backgroundColor: colorMode === 'dark' ? '#3a3a3a' : '#ffffff',
-                    border: `1px solid ${colorMode === 'dark' ? '#555' : '#ddd'}`,
+                    backgroundColor: colorMode === 'dark' ? '#141E30' : '#ffffff',
+                    border: `1px solid ${colorMode === 'dark' ? '#1b263b' : '#d4d8f0'}`,
+                    color: colorMode === 'dark' ? '#F5F7FF' : '#000'
                   }}
                 >
                   <div>🤖 Thinking...</div>
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
+          {/* Input */}
           <div
             style={{
               padding: '12px',
-              borderTop: `1px solid ${colorMode === 'dark' ? '#4a4a4a' : '#eee'}`,
-              backgroundColor: colorMode === 'dark' ? '#282828' : '#ffffff'
+              borderTop: `1px solid ${colorMode === 'dark' ? '#1b263b' : '#d4d8f0'}`,
+              backgroundColor: colorMode === 'dark' ? '#141E30' : '#F5F7FF'
             }}
           >
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -402,9 +359,9 @@ const ChatBot = () => {
                   flex: 1,
                   padding: '10px 12px',
                   borderRadius: '20px',
-                  border: `1px solid ${colorMode === 'dark' ? '#4a4a4a' : '#ddd'}`,
-                  backgroundColor: colorMode === 'dark' ? '#3a3a3a' : '#ffffff',
-                  color: colorMode === 'dark' ? '#fff' : '#000',
+                  border: `1px solid ${colorMode === 'dark' ? '#1b263b' : '#d4d8f0'}`,
+                  backgroundColor: colorMode === 'dark' ? '#1f2942' : '#ffffff',
+                  color: colorMode === 'dark' ? '#F5F7FF' : '#000',
                   resize: 'none',
                   minHeight: '40px',
                   maxHeight: '100px',
@@ -418,10 +375,14 @@ const ChatBot = () => {
                 style={{
                   minWidth: '60px',
                   padding: '10px 16px',
-                  backgroundColor: inputValue.trim() && !isLoading
-                    ? '#76b900'
-                    : (colorMode === 'dark' ? '#4a4a4a' : '#e0e0e0'),
-                  color: inputValue.trim() && !isLoading ? 'white' : (colorMode === 'dark' ? '#aaa' : '#888'),
+                  backgroundColor:
+                    inputValue.trim() && !isLoading
+                      ? (colorMode === 'dark' ? '#F5F7FF' : '#141E30')
+                      : (colorMode === 'dark' ? '#1f2942' : '#d4d8f0'),
+                  color:
+                    inputValue.trim() && !isLoading
+                      ? (colorMode === 'dark' ? '#141E30' : '#F5F7FF')
+                      : (colorMode === 'dark' ? '#9aa5c3' : '#666'),
                   border: 'none',
                   borderRadius: '20px',
                   cursor: inputValue.trim() && !isLoading ? 'pointer' : 'default',

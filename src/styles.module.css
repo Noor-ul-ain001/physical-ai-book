@@ -27,9 +27,9 @@
 .personalizationPanel {
   margin-top: 2rem;
   padding: 1.5rem;
-  border: 1px solid #76b900;
+  border: 1px solid var(--ifm-color-primary);
   border-radius: 8px;
-  background-color: rgba(118, 185, 0, 0.05);
+  background-color: rgba(37, 43, 80, 0.05);
 }
 
 .questionnaire {
@@ -63,7 +63,7 @@
 }
 
 .featureCard h2 {
-  color: #76b900;
+  color: var(--ifm-color-primary);
 }
 
 .translateButton {
@@ -71,7 +71,7 @@
   top: 10px;
   right: 10px;
   z-index: 1000;
-  background-color: #76b900;
+  background-color: var(--ifm-color-primary);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -81,5 +81,5 @@
 }
 
 .translateButton:hover {
-  background-color: #5d9400;
+  background-color: var(--ifm-color-primary-dark);
 }

@@ -1,81 +1,174 @@
-.floatingButton {
+/* chatbot.module.css - Updated with your theme colors */
+
+/* Chat Icon Button */
+.chatbotIconBtn {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 20px;
+  right: 20px;
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #252B50, #3A4275);
+  color: #F5F7FF;
   border: none;
+  font-size: 28px;
   cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 20px rgba(37, 43, 80, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
-  z-index: 9999;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: pulse 2s infinite;
 }
 
-.floatingButton:hover {
+.chatbotIconBtn:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 6px 25px rgba(37, 43, 80, 0.6);
+  background: linear-gradient(135deg, #3A4275, #252B50);
 }
 
-.floatingButton:active {
-  transform: scale(0.95);
-}
-
-.icon {
-  width: 32px;
-  height: 32px;
-  color: white;
-}
-
-.chatbotContainer {
-  position: fixed;
-  bottom: 110px;
-  right: 30px;
-  width: 400px;
-  height: 600px;
-  z-index: 9998;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(37, 43, 80, 0.4);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  50% {
+    box-shadow: 0 4px 25px rgba(37, 43, 80, 0.8);
   }
 }
 
-@media (max-width: 768px) {
-  .chatbotContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-  }
+/* Chat Window */
+.chatbotWindow.light {
+  background: #F5F7FF;
+  border: 1px solid #D1D8F0;
+  color: #252B50;
+}
 
-  .floatingButton {
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-  }
+.chatbotWindow.dark {
+  background: #252B50;
+  border: 1px solid #3A4275;
+  color: #F5F7FF;
+}
 
-  .icon {
-    width: 28px;
-    height: 28px;
-  }
+/* Header */
+.chatHeader {
+  background: linear-gradient(135deg, #252B50, #3A4275);
+  color: #F5F7FF;
+}
+
+/* Welcome Message */
+.welcomeMessage.light h3 {
+  color: #252B50;
+}
+
+.welcomeMessage.dark h3 {
+  color: #F5F7FF;
+}
+
+.welcomeMessage.light li::before {
+  color: #252B50;
+}
+
+.welcomeMessage.dark li::before {
+  color: #F5F7FF;
+}
+
+/* Light theme message bubbles */
+.messageBubble.user.light {
+  background: linear-gradient(135deg, #252B50, #3A4275);
+  color: #F5F7FF;
+}
+
+.messageBubble.bot.light {
+  background: #FFFFFF;
+  border: 1px solid #D1D8F0;
+  color: #252B50;
+}
+
+/* Dark theme message bubbles */
+.messageBubble.user.dark {
+  background: linear-gradient(135deg, #3A4275, #252B50);
+  color: #F5F7FF;
+}
+
+.messageBubble.bot.dark {
+  background: #1A1F3A;
+  border: 1px solid #3A4275;
+  color: #F5F7FF;
+}
+
+/* Sources */
+.sourcesTitle {
+  color: #252B50;
+}
+
+.chatbotWindow.dark .sourcesTitle {
+  color: #3A4275;
+}
+
+.sourceLink {
+  color: #252B50;
+}
+
+.chatbotWindow.dark .sourceLink {
+  color: #3A4275;
+}
+
+.sourceLink:hover {
+  color: #3A4275;
+}
+
+.chatbotWindow.dark .sourceLink:hover {
+  color: #4A5699;
+}
+
+/* Typing Dots */
+.typingDot {
+  background: #252B50;
+}
+
+.chatbotWindow.dark .typingDot {
+  background: #F5F7FF;
+}
+
+/* Input Area */
+.chatTextarea.light {
+  border-color: #D1D8F0;
+  background: #FFFFFF;
+  color: #252B50;
+}
+
+.chatTextarea.dark {
+  border-color: #3A4275;
+  background: #1A1F3A;
+  color: #F5F7FF;
+}
+
+.chatTextarea:focus {
+  border-color: #252B50;
+  box-shadow: 0 0 0 3px rgba(37, 43, 80, 0.1);
+}
+
+.chatbotWindow.dark .chatTextarea:focus {
+  border-color: #3A4275;
+  box-shadow: 0 0 0 3px rgba(58, 66, 117, 0.2);
+}
+
+/* Send Button */
+.sendButton {
+  background: linear-gradient(135deg, #252B50, #3A4275);
+  color: #F5F7FF;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3A4275, #252B50);
+}
+
+/* Scrollbar */
+.messagesContainer.light::-webkit-scrollbar-thumb {
+  background: #D1D8F0;
+}
+
+.messagesContainer.dark::-webkit-scrollbar-thumb {
+  background: #3A4275;
 }

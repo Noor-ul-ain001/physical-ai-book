@@ -1,0 +1,719 @@
+/* index.module.css */
+.heroBanner {
+  padding: 4rem 0;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.heroContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.heroText {
+  max-width: 800px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: white;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.titleGradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: #CBD5E1;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.primaryButton {
+  background: #3B82F6;
+  color: white;
+}
+
+.secondaryButton {
+  background: #1E293B;
+  color: white;
+  border-color: #475569;
+}
+
+.outlineButton {
+  background: transparent;
+  color: #8B5CF6;
+  border-color: #8B5CF6;
+}
+
+.buttonIcon {
+  margin-right: 0.5rem;
+}
+
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #1E293B;
+  border: 1px solid #334155;
+}
+
+.statIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #94A3B8;
+  margin: 0;
+}
+
+/* Hero Visual Section */
+.heroVisual {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modelContainer, .videoContainer {
+  background: #1E293B;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+
+.modelHeader, .videoHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.modelIcon, .videoIcon {
+  font-size: 1.25rem;
+}
+
+.liveBadge {
+  background: #EF4444;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  margin-left: auto;
+}
+
+.modelPlaceholder, .videoPlaceholder {
+  padding: 2rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.architectureGrid {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.archItem {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.archIcon {
+  font-size: 1.5rem;
+}
+
+.archArrow {
+  color: #8B5CF6;
+  font-weight: bold;
+}
+
+/* Features Grid */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+
+.featureCard {
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+}
+
+.featureIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: white;
+}
+
+.featureDescription {
+  color: #94A3B8;
+  line-height: 1.6;
+}
+
+/* Main Content */
+.mainContent {
+  padding: 4rem 0;
+}
+
+.contentTabs {
+  display: flex;
+  gap: 0.5rem;
+  background: #1E293B;
+  padding: 0.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border: 1px solid #334155;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #94A3B8;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.activeTab {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: white;
+}
+
+.tabIcon {
+  font-size: 1.25rem;
+}
+
+.contentSections {
+  min-height: 600px;
+}
+
+.contentSection {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sectionHeader {
+  margin-bottom: 3rem;
+}
+
+.sectionDescription {
+  font-size: 1.1rem;
+  color: #94A3B8;
+  max-width: 600px;
+}
+
+/* Modules Grid */
+.modulesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.moduleCard {
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.moduleHeader {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.moduleIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.topicsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.topicsList li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+/* Hardware Tiers */
+.hardwareTier {
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border: 2px solid;
+}
+
+.tierHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tierBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.componentsGrid, .robotOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.componentCard, .robotCard {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.compIcon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.robotBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Architecture Summary */
+.architectureSummary {
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+.archDiagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.archNode {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 2px solid;
+  min-width: 120px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.archNode svg {
+  font-size: 2rem;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 3rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #334155;
+}
+
+.timelineItem {
+  position: relative;
+  margin-bottom: 2rem;
+  padding-left: 2rem;
+  border-left: 2px solid transparent;
+}
+
+.timelineMarker {
+  position: absolute;
+  left: -1rem;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid #0F172A;
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.weeksBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.timelineTopics {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timelineTopics li {
+  margin-bottom: 0.5rem;
+  position: relative;
+  padding-left: 1rem;
+}
+
+.timelineTopics li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #94A3B8;
+}
+
+/* Assessments */
+.assessments {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.assessmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.assessmentCard {
+  text-align: center;
+  padding: 1.5rem;
+  background: #0F172A;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+/* Deployment Options */
+.deploymentOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.optionCard {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.optionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.priceTag {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.optionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.optionList li {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.optionList li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #10B981;
+}
+
+/* Economy Kit */
+.econKit {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.econGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.econItem {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: #0F172A;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.totalCost {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid;
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 4rem;
+  border-radius: 16px;
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.ctaContent {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ctaIcon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.ctaDescription {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.ctaButton {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+/* Info Cards */
+.infoCard {
+  padding: 2rem;
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 996px) {
+  .heroContent {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+  
+  .heroButtons {
+    flex-direction: column;
+  }
+  
+  .heroButtons .button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .contentTabs {
+    flex-wrap: wrap;
+  }
+  
+  .tab {
+    flex: 1 0 calc(50% - 0.5rem);
+    min-width: 140px;
+  }
+  
+  .architectureGrid {
+    flex-direction: column;
+  }
+  
+  .archArrow {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .heroStats {
+    grid-template-columns: 1fr;
+  }
+  
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modulesGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .deploymentOptions {
+    grid-template-columns: 1fr;
+  }
+  
+  .ctaButtons {
+    flex-direction: column;
+  }
+  
+  .ctaButton {
+    width: 100%;
+  }
+}
+
+/* Utility Classes */
+.mainContainer {
+  background: #0F172A;
+  color: white;
+}

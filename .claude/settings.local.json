@@ -8,7 +8,9 @@
       "Bash(findstr:*)",
       "Bash(pip install:*)",
       "Bash(python:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
