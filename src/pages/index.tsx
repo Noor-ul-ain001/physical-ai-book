@@ -148,7 +148,7 @@ const HomepageHero = () => {
             <div className={styles.heroButtons}>
               <Link
                 className={clsx(styles.primaryButton, styles.button)}
-                to="/docs/intro"
+                to="/docs/intro/welcome"
                 style={{ background: '#3B82F6', borderColor: '#3B82F6' }}
               >
                 <FiPlayCircle className={styles.buttonIcon} />
@@ -156,7 +156,7 @@ const HomepageHero = () => {
               </Link>
               <Link
                 className={clsx(styles.secondaryButton, styles.button)}
-                to="/docs/quick-start"
+                to="/docs/module1-ros2/overview"
                 style={{ background: '#1E293B', borderColor: '#475569' }}
               >
                 <FiCode className={styles.buttonIcon} />
@@ -689,17 +689,17 @@ const HomepageFeatures = () => {
             <div className={styles.ctaButtons}>
               <Link
                 className={clsx(styles.primaryButton, styles.button, styles.ctaButton)}
-                to="/docs/intro"
+                to="/docs/intro/welcome"
                 style={{ background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)' }}
               >
                 Start Free Course
               </Link>
               <Link
                 className={clsx(styles.outlineButton, styles.button, styles.ctaButton)}
-                to="/contact"
+                to="/docs/intro/hardware-guide"
                 style={{ borderColor: '#8B5CF6', color: '#8B5CF6' }}
               >
-                Book a Lab Demo
+                View Hardware Guide
               </Link>
             </div>
           </div>
